@@ -19,18 +19,18 @@ public class User {
     private Long userIdx;
 
     @JsonIgnore
-    @Column(nullable = false)
-    private String email;
+    @Column(name = "kakao_account_id", nullable = false)
+    private Long kakaoAccountId;
 
-    public User(String email) {
-        this.email = email;
+    public User(Long kakaoAccountId) {
+        this.kakaoAccountId = kakaoAccountId;
     }
 
     @Override
     public String toString() {
         return "User{" +
                 "userIdx=" + userIdx +
-                ", email='" + email + '\'' +
+                ", kakaoAccountId=" + kakaoAccountId +
                 '}';
     }
 }
