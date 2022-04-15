@@ -19,7 +19,7 @@ public class User {
     private Long userIdx;
 
     @JsonIgnore
-    @Column(nullable = false)
+    @Column(name = "kakao_account_id", nullable = false)
     private Long kakaoAccountId;
 
     public User(Long kakaoAccountId) {
@@ -30,7 +30,7 @@ public class User {
     public String toString() {
         return "User{" +
                 "userIdx=" + userIdx +
-                ", kakaoAccountId='" + kakaoAccountId + '\'' +
+                ", kakaoAccountId=" + kakaoAccountId +
                 '}';
     }
 }
