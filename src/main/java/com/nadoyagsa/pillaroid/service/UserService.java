@@ -26,8 +26,8 @@ public class UserService {
         return userRepository.findById(userIdx);
     }
 
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findUserByEmail(email);
+    public Optional<User> findUserByKakaoAccountId(Long kakaoAccountId) {
+        return userRepository.findUserByKakaoAccountId(kakaoAccountId);
     }
 
     public User signUp(User user) {
