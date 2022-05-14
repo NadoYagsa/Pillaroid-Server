@@ -13,8 +13,8 @@ import java.io.IOException;
 
 @Component
 public class JsoupComponent {
-    public Medicine getMedicineInfo() {
-        final String medicineUrl = "";
+    public Medicine getMedicineInfo(String url) {
+        final String medicineUrl = url;
 
         Connection conn = Jsoup.connect(medicineUrl);
         try {

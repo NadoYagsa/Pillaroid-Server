@@ -15,6 +15,6 @@ public class MedicineService {
     }
 
     public Medicine getMedicineInfo() {
-        return jsoupComponent.getMedicineInfo();
+        return jsoupComponent.getMedicineInfo("");
     }
 }
