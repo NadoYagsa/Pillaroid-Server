@@ -1,4 +1,4 @@
-package com.nadoyagsa.pillaroid.common;
+package com.nadoyagsa.pillaroid.common.controller;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
