@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.apache.commons.math3.util.Pair;
 import org.jsoup.Jsoup;
@@ -22,6 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class BarcodeService {
 	public BarcodeCrawlingResponse getProductCode(String barcode) throws IOException {
+		if (!barcode.matches("^\\d{13,14}")) { //의약품바코드 형식(GTIN-13,GTIN-14)
+			throw ProjectException.NOT_SUPPORTED_BARCODE_FORMAT;
+		}
+
 		// 구글에서 의약품안전나라 링크 크롤링
 		String link = crawlProductLink(barcode);
 
