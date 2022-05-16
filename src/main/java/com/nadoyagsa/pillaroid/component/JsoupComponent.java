@@ -54,9 +54,10 @@ public class JsoupComponent {
 
             if (textElement != null) {
                 String text = textElement.html()
-                        .replace("<br>", "\n")              // 줄바꿈 모두 저장
+                        .replace("<br>", "\n")                      // 줄바꿈 모두 저장
                         .replaceAll("\\[허가사항변경[^]]*]\n*", "")   // [허가사항변경] 관련 불필요 내용 제거
-                        .replaceAll("<[^>]*>", "");         // 태그 모두 제거
+                        .replaceAll("<[^>]*>", "")                  // 태그 모두 제거
+                        .strip();
 
                 switch (topic) {
                     case "외형정보":
