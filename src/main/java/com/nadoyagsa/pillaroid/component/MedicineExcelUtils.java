@@ -71,7 +71,7 @@ public class MedicineExcelUtils {
 					});
 				} else {
 					//값이 없으면 공백 저장
-					for (int colIdx = 4; colIdx <= 7; colIdx++) {   //4: 효능효과, 5: 용법용량, 6: 주의사항, 7: 저장방법
+					for (int colIdx = 2; colIdx <= 9; colIdx++) {   //2:성상, 4: 효능효과, 5: 용법용량, 6: 주의사항, 7: 저장방법, 9: 성분정보
 						row.createCell(colIdx).setCellValue("");
 					}
 				}
@@ -117,10 +117,12 @@ public class MedicineExcelUtils {
 
 		//(수정할 colIdx, content)로 된 hashMap
 		HashMap<Integer, String> result = new HashMap<>();
-		result.put(4, medicineInfo.getEfficacy());
-		result.put(5, medicineInfo.getUsage());
-		result.put(6, medicineInfo.getPrecautions());
-		result.put(7, medicineInfo.getSave());
+		result.put(2, medicineInfo.getAppearanceInfo().toString());		// C열: 외형정보(성상)
+		result.put(4, medicineInfo.getEfficacy());		// E열: 효능효과
+		result.put(5, medicineInfo.getUsage());			// F열: 용법용량
+		result.put(6, medicineInfo.getPrecautions());	// G열: 주의사항
+		result.put(7, medicineInfo.getSave());			// H열: 저장방법
+		result.put(9, medicineInfo.getIngredient());	// J열: 성분정보
 		return result;
 	}
 }
