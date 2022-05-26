@@ -29,6 +29,7 @@ import com.nadoyagsa.pillaroid.dto.Medicine;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.util.HtmlUtils;
 
 @Component
 @RequiredArgsConstructor
@@ -106,7 +107,7 @@ public class MedicineExcelUtils {
 					.save(row.getCell(SAVE_COL).getStringCellValue())
 					.efficacy(row.getCell(EFFICACY_COL).getStringCellValue())
 					.usage(row.getCell(USAGE_COL).getStringCellValue())
-					.precautions(row.getCell(PRECAUTION_COL).getStringCellValue())
+					.precautions(HtmlUtils.htmlUnescape(row.getCell(PRECAUTION_COL).getStringCellValue()))
 					.build();
 		else if (cellType == CellType.STRING)
 			return MedicineResponse.builder()
@@ -118,7 +119,7 @@ public class MedicineExcelUtils {
 					.save(row.getCell(SAVE_COL).getStringCellValue())
 					.efficacy(row.getCell(EFFICACY_COL).getStringCellValue())
 					.usage(row.getCell(USAGE_COL).getStringCellValue())
-					.precautions(row.getCell(PRECAUTION_COL).getStringCellValue())
+					.precautions(HtmlUtils.htmlUnescape(row.getCell(PRECAUTION_COL).getStringCellValue()))
 					.build();
 
 		throw NotFoundException.MEDICINE_NOT_FOUND;
