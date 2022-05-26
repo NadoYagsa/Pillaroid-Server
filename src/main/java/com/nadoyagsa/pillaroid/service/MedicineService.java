@@ -1,20 +1,36 @@
 package com.nadoyagsa.pillaroid.service;
 
-import com.nadoyagsa.pillaroid.component.JsoupComponent;
+import java.io.IOException;
+
+import com.nadoyagsa.pillaroid.component.MedicineCrawlUtil;
+import com.nadoyagsa.pillaroid.component.MedicineExcelUtils;
 import com.nadoyagsa.pillaroid.dto.Medicine;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.nadoyagsa.pillaroid.dto.MedicineResponse;
+
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class MedicineService {
-    private final JsoupComponent jsoupComponent;
+    private final MedicineExcelUtils medicineExcelUtils;
 
-    @Autowired
-    public MedicineService(JsoupComponent jsoupComponent) {
-        this.jsoupComponent = jsoupComponent;
+    public MedicineResponse getMedicineInfoByCode(String code) throws IOException {
+        return medicineExcelUtils.findMedicineExcelByCode(code);
     }
 
-    public Medicine getMedicineInfo() {
-        return jsoupComponent.getMedicineInfo("");
+    public MedicineResponse getMedicineInfoByName(String name) throws IOException {
+        return medicineExcelUtils.findMedicineExcelByName(name);
+    }
+
+    public boolean updateMedicineInfoInExcel() {
+        try {
+            medicineExcelUtils.updateMedicineExcel();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
