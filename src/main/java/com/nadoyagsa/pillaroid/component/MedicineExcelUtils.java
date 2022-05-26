@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class MedicineExcelUtils {
-	private final JsoupComponent jsoupComponent;
+	private final MedicineCrawlUtil medicineCrawlUtil;
 
 	public void updateMedicineExcel() throws IOException {
 
@@ -113,7 +113,7 @@ public class MedicineExcelUtils {
 		String detailBaseUrl = "https://terms.naver.com";
 		String detailUrl = detailBaseUrl + productLink;
 
-		Medicine medicineInfo = jsoupComponent.getMedicineInfo(detailUrl);
+		Medicine medicineInfo = medicineCrawlUtil.getMedicineInfo(detailUrl);
 
 		//(수정할 colIdx, content)로 된 hashMap
 		HashMap<Integer, String> result = new HashMap<>();
