@@ -13,9 +13,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 public class MedicineResponse {
-	private String idx;		//품목일련번호(추후 idx로 변경 예정)
-	private String code;	//품목일련번호
-	private String name;	//제품명
+	private Long idx;					//품목일련번호(추후 idx로 변경 예정)
+	private Long code;					//품목일련번호
+	private String name;				//제품명
 	private String appearanceInfo;      // 외형정보
 	private String ingredient;      // 성분정보
 	private String save;            // 저장방법

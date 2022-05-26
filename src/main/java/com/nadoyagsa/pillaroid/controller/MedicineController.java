@@ -1,13 +1,12 @@
 package com.nadoyagsa.pillaroid.controller;
 
 import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
-import com.nadoyagsa.pillaroid.dto.Medicine;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
+import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import com.nadoyagsa.pillaroid.service.BarcodeService;
 import com.nadoyagsa.pillaroid.service.MedicineService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,18 +25,23 @@ public class MedicineController {
 
     @GetMapping
     public ApiResponse<MedicineResponse> getMedicineInfo(
-            @RequestParam(required = false) String idx,
+            @RequestParam(required = false) Long idx,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String barcode) throws IOException {
         if (idx != null && !idx.equals("")) {
             return ApiResponse.success(medicineService.getMedicineInfoByCode(idx));    //TODO: 엑셀에서 조회할 때까진 품목일련번호를 idx 대신 받음 (메소드 변경 요망)
         } else if (barcode != null && !idx.equals("")) {
-            String codeByBarcode = barcodeService.getProductCode(barcode);
+            Long codeByBarcode = Long.valueOf(barcodeService.getProductCode(barcode));
             return ApiResponse.success(medicineService.getMedicineInfoByCode(codeByBarcode));
         } else if (name != null && !idx.equals("")) {
             return ApiResponse.success(medicineService.getMedicineInfoByName(name));
         } else {
             throw BadRequestException.BAD_PARAMETER;
         }
+    }
+
+    @GetMapping("/voice")
+    public ApiResponse<List<VoiceResponse>> getVoiceMedicineInfo(@RequestParam String name) throws IOException {
+        return ApiResponse.success(medicineService.getMedicineListByName(name));
     }
 }

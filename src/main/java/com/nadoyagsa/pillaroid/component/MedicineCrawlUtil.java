@@ -9,6 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.HtmlUtils;
 
 import java.io.IOException;
 
@@ -88,6 +89,8 @@ public class MedicineCrawlUtil {
                             .replaceAll("\\[허가사항변경[^]]*]\n*", "")   // [허가사항변경] 관련 불필요 내용 제거
                             .replaceAll("<[^>]*>", "")                  // 태그 모두 제거
                             .strip();
+
+                    text = HtmlUtils.htmlUnescape(text);        // html 특수 문자 변환
 
                     switch (topic) {
                         case "성분정보":

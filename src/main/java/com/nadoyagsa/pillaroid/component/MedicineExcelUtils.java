@@ -6,8 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -41,7 +44,7 @@ public class MedicineExcelUtils {
 	private final int SAVE_COL = 7;	// H열: 저장방법
 	private final int INGREDIENT_COL = 9;	// J열: 성분정보
 
-	public MedicineResponse findMedicineExcelByCode(String code) throws IOException {
+	public MedicineResponse findMedicineExcelByCode(Long code) throws IOException {
 		ClassPathResource inputResource = new ClassPathResource("data/medicine.xlsx");
 
 		FileInputStream file = new FileInputStream(new File(inputResource.getURI()));
@@ -51,14 +54,13 @@ public class MedicineExcelUtils {
 		int rows = sheet.getPhysicalNumberOfRows();
 
 		//품목일련번호 일치하는 데이터 찾기
-		for (int rowIdx = 1; rowIdx<rows; rowIdx++) {
+		for (int rowIdx = 1; rowIdx<10000; rowIdx++) {
 			XSSFRow row = sheet.getRow(rowIdx);
 			if (row != null) {
 				XSSFCell cell = row.getCell(CODE_COL);
-				CellType cellType = cell.getCellType();
-				if (cellType == CellType.NUMERIC && String.valueOf(cell.getNumericCellValue()).equals(code)) {
+				if (cell != null && cell.getCellType() == CellType.NUMERIC && String.valueOf(cell.getNumericCellValue()).equals(String.valueOf(code))) {
 					return getMedicineResponse(row);
-				} else if (cellType == CellType.STRING && cell.getStringCellValue().equals(code)) {
+				} else if (cell != null && cell.getCellType() == CellType.STRING && cell.getStringCellValue().equals(String.valueOf(code))) {
 					return getMedicineResponse(row);
 				}
 			}
@@ -91,17 +93,74 @@ public class MedicineExcelUtils {
 	}
 
 	private MedicineResponse getMedicineResponse(XSSFRow row) {
-		return MedicineResponse.builder()
-				.idx(row.getCell(CODE_COL).getStringCellValue())
-				.code(row.getCell(CODE_COL).getStringCellValue())
-				.name(row.getCell(TITLE_COL).getStringCellValue())
-				.appearanceInfo(row.getCell(SHAPE_COL).getStringCellValue())
-				.ingredient(row.getCell(INGREDIENT_COL).getStringCellValue())
-				.save(row.getCell(SAVE_COL).getStringCellValue())
-				.efficacy(row.getCell(EFFICACY_COL).getStringCellValue())
-				.usage(row.getCell(USAGE_COL).getStringCellValue())
-				.precautions(row.getCell(PRECAUTION_COL).getStringCellValue())
-				.build();
+		XSSFCell cell = row.getCell(CODE_COL);
+		CellType cellType = cell.getCellType();
+
+		if (cellType == CellType.NUMERIC)
+			return MedicineResponse.builder()
+					.idx(Double.valueOf(row.getCell(CODE_COL).getNumericCellValue()).longValue())
+					.code(Double.valueOf(row.getCell(CODE_COL).getNumericCellValue()).longValue())
+					.name(row.getCell(TITLE_COL).getStringCellValue())
+					.appearanceInfo(row.getCell(SHAPE_COL).getStringCellValue())
+					.ingredient(row.getCell(INGREDIENT_COL).getStringCellValue())
+					.save(row.getCell(SAVE_COL).getStringCellValue())
+					.efficacy(row.getCell(EFFICACY_COL).getStringCellValue())
+					.usage(row.getCell(USAGE_COL).getStringCellValue())
+					.precautions(row.getCell(PRECAUTION_COL).getStringCellValue())
+					.build();
+		else if (cellType == CellType.STRING)
+			return MedicineResponse.builder()
+					.idx(Long.valueOf(row.getCell(CODE_COL).getStringCellValue()))
+					.code(Long.valueOf(row.getCell(CODE_COL).getStringCellValue()))
+					.name(row.getCell(TITLE_COL).getStringCellValue())
+					.appearanceInfo(row.getCell(SHAPE_COL).getStringCellValue())
+					.ingredient(row.getCell(INGREDIENT_COL).getStringCellValue())
+					.save(row.getCell(SAVE_COL).getStringCellValue())
+					.efficacy(row.getCell(EFFICACY_COL).getStringCellValue())
+					.usage(row.getCell(USAGE_COL).getStringCellValue())
+					.precautions(row.getCell(PRECAUTION_COL).getStringCellValue())
+					.build();
+
+		throw NotFoundException.MEDICINE_NOT_FOUND;
+	}
+
+	public List<VoiceResponse> findVoiceMedicineListByName(String name) throws IOException {
+		List<VoiceResponse> medicineList = new ArrayList<>();
+
+		ClassPathResource inputResource = new ClassPathResource("data/medicine.xlsx");
+
+		FileInputStream file = new FileInputStream(new File(inputResource.getURI()));
+		XSSFWorkbook workbook = new XSSFWorkbook(file);
+
+		XSSFSheet sheet = workbook.getSheetAt(0);
+		//int rows = sheet.getPhysicalNumberOfRows();
+
+		for (int rowIdx=1; rowIdx<10000; rowIdx++) {
+			XSSFRow row = sheet.getRow(rowIdx);
+			if (row != null) {
+				XSSFCell titleCell = row.getCell(TITLE_COL);
+				String title = titleCell.getStringCellValue();
+				
+				// 음성 검색 명이 포함이 되어있는지 확인
+				if (title.contains(name) && row.getCell(CODE_COL) != null) {
+					XSSFCell codeCell = row.getCell(CODE_COL);
+					CellType cellType = codeCell.getCellType();
+
+					Long code = 0L;
+					if (cellType == CellType.NUMERIC)
+						code = Double.valueOf(codeCell.getNumericCellValue()).longValue();
+					else if (cellType == CellType.STRING)
+						code = Long.valueOf(codeCell.getStringCellValue());
+
+					medicineList.add(VoiceResponse.builder()
+							.idx(code)	//TODO: DB에 들어가면 ID로 바뀌어야 함!
+							.name(title)
+							.build());
+				}
+			}
+		}
+		
+		return medicineList;
 	}
 
 	public void updateMedicineExcel() throws IOException {
