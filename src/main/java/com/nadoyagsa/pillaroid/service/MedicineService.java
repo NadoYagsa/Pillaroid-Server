@@ -6,6 +6,7 @@ import java.util.List;
 import com.nadoyagsa.pillaroid.component.MedicineExcelUtils;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 
+import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,10 @@ public class MedicineService {
 
     public List<VoiceResponse> getMedicineListByName(String name) throws IOException {
         return medicineExcelUtils.findVoiceMedicineListByName(name);
+    }
+
+    public List<PrescriptionResponse> getMedicineListByNameList(String[] nameList) throws IOException {
+        return medicineExcelUtils.findPrescriptionMedicineListByName(nameList);
     }
 
     public boolean updateMedicineInfoInExcel() {

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.CellType;
@@ -161,6 +162,58 @@ public class MedicineExcelUtils {
 			}
 		}
 		
+		return medicineList;
+	}
+
+	public List<PrescriptionResponse> findPrescriptionMedicineListByName(String[] nameList) throws IOException {
+		List<PrescriptionResponse> medicineList = new ArrayList<>();
+
+		ClassPathResource inputResource = new ClassPathResource("data/medicine.xlsx");
+
+		FileInputStream file = new FileInputStream(new File(inputResource.getURI()));
+		XSSFWorkbook workbook = new XSSFWorkbook(file);
+
+		XSSFSheet sheet = workbook.getSheetAt(0);
+		//int rows = sheet.getPhysicalNumberOfRows();
+
+		ArrayList<String> tempNameList = new ArrayList<>(List.of(nameList));
+		//제품명 일치하는 데이터 찾기
+		for (int rowIdx = 1; rowIdx<10000; rowIdx++) {
+			XSSFRow row = sheet.getRow(rowIdx);
+			if (row != null) {
+				XSSFCell cell = row.getCell(TITLE_COL);
+				String title = cell.getStringCellValue();
+
+				for (int i=0; i<tempNameList.size(); i++) {
+					String extractedTitle = title.substring(0, Math.min(tempNameList.get(i).length(), title.length()));
+					if (extractedTitle.equals(tempNameList.get(i)) && row.getCell(CODE_COL) != null) {
+						tempNameList.remove(i);
+
+						XSSFCell codeCell = row.getCell(CODE_COL);
+						CellType cellType = codeCell.getCellType();
+
+						Long code = 0L;
+						if (cellType == CellType.NUMERIC)
+							code = Double.valueOf(codeCell.getNumericCellValue()).longValue();
+						else if (cellType == CellType.STRING)
+							code = Long.valueOf(codeCell.getStringCellValue());
+
+						medicineList.add(PrescriptionResponse.builder()
+								.idx(code)
+								.name(title)
+								.appearanceInfo(row.getCell(SHAPE_COL).getStringCellValue())
+								.efficacy(row.getCell(EFFICACY_COL).getStringCellValue())
+								.usage(row.getCell(USAGE_COL).getStringCellValue())
+								.build());
+						break;
+					}
+				}
+			}
+
+			if (tempNameList.size() == 0)
+				return medicineList;
+		}
+
 		return medicineList;
 	}
 

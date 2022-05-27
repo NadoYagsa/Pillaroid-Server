@@ -6,6 +6,7 @@ import java.util.List;
 import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
+import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import com.nadoyagsa.pillaroid.service.BarcodeService;
 import com.nadoyagsa.pillaroid.service.MedicineService;
@@ -42,6 +43,19 @@ public class MedicineController {
 
     @GetMapping("/voice")
     public ApiResponse<List<VoiceResponse>> getVoiceMedicineInfo(@RequestParam String name) throws IOException {
-        return ApiResponse.success(medicineService.getMedicineListByName(name));
+        if (!name.strip().equals(""))
+            return ApiResponse.success(medicineService.getMedicineListByName(name));
+        else
+            throw BadRequestException.BAD_PARAMETER;
+    }
+
+    @GetMapping("/prescription")
+    public ApiResponse<List<PrescriptionResponse>> getPrescriptionMedicineInfo(@RequestParam String names) throws IOException {
+        String[] nameList = names.split(",");
+
+        if (nameList.length > 0)
+            return ApiResponse.success(medicineService.getMedicineListByNameList(nameList));
+        else
+            throw BadRequestException.BAD_PARAMETER;
     }
 }
