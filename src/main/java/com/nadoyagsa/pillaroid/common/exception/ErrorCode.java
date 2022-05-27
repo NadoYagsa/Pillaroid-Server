@@ -16,6 +16,7 @@ public enum ErrorCode {
 	NOT_SUPPORTED_BARCODE_FORMAT(40003, BAD_REQUEST, "지원하지 않는 바코드 형식입니다."),
 
 	/* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
+	DATA_NOT_FOUND(40403, NOT_FOUND, "해당 정보가 없습니다."),
 	BARCODE_NOT_FOUND(40401, NOT_FOUND, "해당 바코드에 대한 정보가 없습니다."),
 	MEDICINE_NOT_FOUND(40402, NOT_FOUND, "조건에 맞는 의약품이 존재하지 않습니다."),
 

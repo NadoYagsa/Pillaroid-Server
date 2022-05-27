@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import org.apache.commons.math3.util.Pair;
@@ -30,8 +32,11 @@ import com.nadoyagsa.pillaroid.dto.Medicine;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.util.HtmlUtils;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MedicineExcelUtils {
@@ -296,7 +301,7 @@ public class MedicineExcelUtils {
 		}
 	}
 
-	private HashMap<Integer, String> crawlMedicineInfo(String productLink) {
+	private HashMap<Integer, String> crawlMedicineInfo(String productLink) throws JsonProcessingException {
 		String detailBaseUrl = "https://terms.naver.com";
 		String detailUrl = detailBaseUrl + productLink;
 
@@ -304,12 +309,21 @@ public class MedicineExcelUtils {
 
 		//(수정할 colIdx, content)로 된 hashMap
 		HashMap<Integer, String> result = new HashMap<>();
-		result.put(SHAPE_COL, medicineInfo.getAppearanceInfo().toString());
-		result.put(EFFICACY_COL, medicineInfo.getEfficacy());
-		result.put(USAGE_COL, medicineInfo.getUsage());
-		result.put(PRECAUTION_COL, medicineInfo.getPrecautions());
-		result.put(SAVE_COL, medicineInfo.getSave());
-		result.put(INGREDIENT_COL, medicineInfo.getIngredient());
-		return result;
+		ObjectMapper objectMapper = new ObjectMapper();
+		if (medicineInfo != null) {
+			if (medicineInfo.getAppearanceInfo() != null) {
+				String shapeString = objectMapper.writeValueAsString(medicineInfo.getAppearanceInfo());
+				result.put(SHAPE_COL, shapeString);
+			}
+			result.put(EFFICACY_COL, medicineInfo.getEfficacy());
+			result.put(USAGE_COL, medicineInfo.getUsage());
+			result.put(PRECAUTION_COL, medicineInfo.getPrecautions());
+			result.put(SAVE_COL, medicineInfo.getSave());
+			result.put(INGREDIENT_COL, medicineInfo.getIngredient());
+			return result;
+		} else {
+			log.error("medicineInfo 검색 결과 없음: " + detailUrl);
+			throw NotFoundException.DATA_NOT_FOUND;
+		}
 	}
 }
