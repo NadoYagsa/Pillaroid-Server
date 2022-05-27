@@ -30,10 +30,10 @@ public class MedicineController {
             @RequestParam(required = false) String barcode) throws IOException {
         if (idx != null && !idx.equals("")) {
             return ApiResponse.success(medicineService.getMedicineInfoByCode(idx));    //TODO: 엑셀에서 조회할 때까진 품목일련번호를 idx 대신 받음 (메소드 변경 요망)
-        } else if (barcode != null && !idx.equals("")) {
+        } else if (barcode != null && !barcode.equals("")) {
             Long codeByBarcode = Long.valueOf(barcodeService.getProductCode(barcode));
             return ApiResponse.success(medicineService.getMedicineInfoByCode(codeByBarcode));
-        } else if (name != null && !idx.equals("")) {
+        } else if (name != null && !name.equals("")) {
             return ApiResponse.success(medicineService.getMedicineInfoByName(name));
         } else {
             throw BadRequestException.BAD_PARAMETER;
