@@ -56,7 +56,7 @@ public class MedicineExcelUtils {
 		int rows = sheet.getPhysicalNumberOfRows();
 
 		//품목일련번호 일치하는 데이터 찾기
-		for (int rowIdx = 1; rowIdx<10000; rowIdx++) {
+		for (int rowIdx = 1; rowIdx<rows; rowIdx++) {
 			XSSFRow row = sheet.getRow(rowIdx);
 			if (row != null) {
 				XSSFCell cell = row.getCell(CODE_COL);
@@ -135,9 +135,9 @@ public class MedicineExcelUtils {
 		XSSFWorkbook workbook = new XSSFWorkbook(file);
 
 		XSSFSheet sheet = workbook.getSheetAt(0);
-		//int rows = sheet.getPhysicalNumberOfRows();
+		int rows = sheet.getPhysicalNumberOfRows();
 
-		for (int rowIdx=1; rowIdx<10000; rowIdx++) {
+		for (int rowIdx=1; rowIdx<rows; rowIdx++) {
 			XSSFRow row = sheet.getRow(rowIdx);
 			if (row != null) {
 				XSSFCell titleCell = row.getCell(TITLE_COL);
@@ -174,11 +174,11 @@ public class MedicineExcelUtils {
 		XSSFWorkbook workbook = new XSSFWorkbook(file);
 
 		XSSFSheet sheet = workbook.getSheetAt(0);
-		//int rows = sheet.getPhysicalNumberOfRows();
+		int rows = sheet.getPhysicalNumberOfRows();
 
 		ArrayList<String> tempNameList = new ArrayList<>(List.of(nameList));
 		//제품명 일치하는 데이터 찾기
-		for (int rowIdx = 1; rowIdx<10000; rowIdx++) {
+		for (int rowIdx = 1; rowIdx<rows; rowIdx++) {
 			XSSFRow row = sheet.getRow(rowIdx);
 			if (row != null) {
 				XSSFCell cell = row.getCell(TITLE_COL);
