@@ -1,20 +1,45 @@
 package com.nadoyagsa.pillaroid.service;
 
-import com.nadoyagsa.pillaroid.component.JsoupComponent;
-import com.nadoyagsa.pillaroid.dto.Medicine;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
+import java.util.List;
+
+import com.nadoyagsa.pillaroid.component.MedicineExcelUtils;
+import com.nadoyagsa.pillaroid.dto.MedicineResponse;
+
+import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
+import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class MedicineService {
-    private final JsoupComponent jsoupComponent;
+    private final MedicineExcelUtils medicineExcelUtils;
 
-    @Autowired
-    public MedicineService(JsoupComponent jsoupComponent) {
-        this.jsoupComponent = jsoupComponent;
+    public MedicineResponse getMedicineInfoByCode(Long code) throws IOException {
+        return medicineExcelUtils.findMedicineExcelByCode(code);
     }
 
-    public Medicine getMedicineInfo() {
-        return jsoupComponent.getMedicineInfo("");
+    public MedicineResponse getMedicineInfoByName(String name) throws IOException {
+        return medicineExcelUtils.findMedicineExcelByName(name);
+    }
+
+    public List<VoiceResponse> getMedicineListByName(String name) throws IOException {
+        return medicineExcelUtils.findVoiceMedicineListByName(name);
+    }
+
+    public List<PrescriptionResponse> getMedicineListByNameList(String[] nameList) throws IOException {
+        return medicineExcelUtils.findPrescriptionMedicineListByName(nameList);
+    }
+
+    public boolean updateMedicineInfoInExcel() {
+        try {
+            medicineExcelUtils.updateMedicineExcel();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

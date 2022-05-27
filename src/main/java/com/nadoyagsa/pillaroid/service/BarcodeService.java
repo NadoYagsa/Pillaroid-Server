@@ -14,31 +14,27 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
-import com.nadoyagsa.pillaroid.common.exception.ProjectException;
-import com.nadoyagsa.pillaroid.dto.BarcodeCrawlingResponse;
+import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
+import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 public class BarcodeService {
-	public BarcodeCrawlingResponse getProductCode(String barcode) throws IOException {
+	public String getProductCode(String barcode) throws IOException {
 		//TODO: QR 코드는 읽을 때 13~14 자리가 아닐 수도 있음
 		if (!barcode.matches("^\\d{13,14}")) { //의약품바코드 형식(GTIN-13,GTIN-14)
-			throw ProjectException.NOT_SUPPORTED_BARCODE_FORMAT;
+			throw BadRequestException.NOT_SUPPORTED_BARCODE_FORMAT;
 		}
 
-		// 구글에서 의약품안전나라 링크 크롤링
+		//구글에서 의약품안전나라 링크 크롤링
 		String link = crawlProductLink(barcode);
 
 		//의약품안전나라에서 품목기준코드, 제품명 크롤링 (pair: 품목기준코드, 제품명)
 		Pair<String, String> productInfo = crawlProductMeta(link, barcode);
 
-		return BarcodeCrawlingResponse
-				.builder()
-				.productCode(productInfo.getFirst())
-				.productName(productInfo.getSecond())
-				.build();
+		return productInfo.getFirst();
 	}
 
 	private Pair<String, String> crawlProductMeta(String url, String barcode) throws IOException {
@@ -49,7 +45,7 @@ public class BarcodeService {
 
 		//바코드가 정확히 일치하는 의약품인지 검사
 		if (!hasBarcode(barcode, nedrugDoc)) {
-			throw ProjectException.BARCODE_NOT_FOUND;
+			throw NotFoundException.BARCODE_NOT_FOUND;
 		}
 
 		//품목기준코드 추출
@@ -75,11 +71,15 @@ public class BarcodeService {
 				.map(Element::text);
 
 		//크롤링 값 중 검색 바코드와 일치하는 것이 있는지 체크
-		String[] barcodes = barcodeText.get().split(", ");
-		long resultCount = Arrays.stream(barcodes)
-				.filter(b -> b.equals(barcode))
-				.count();
-		return resultCount == 1;	//결과가 없으면 false 반환
+		if (barcodeText.isPresent()) {
+			String[] barcodes = barcodeText.get().split(", ");
+			long resultCount = Arrays.stream(barcodes)
+					.filter(b -> b.equals(barcode))
+					.count();
+			return resultCount == 1;	//결과가 없으면 false 반환
+		} else {
+			throw NotFoundException.BARCODE_NOT_FOUND;
+		}
 	}
 
 	private String crawlProductLink(String barcode) throws IOException {
@@ -100,7 +100,7 @@ public class BarcodeService {
 			}
 		}
 
-		if (nedrugUrl.equals("")) throw ProjectException.BARCODE_NOT_FOUND;	//조회된 결과가 없으면 BARCODE_NOT_FOUND 익셉션
+		if (nedrugUrl.equals("")) throw NotFoundException.BARCODE_NOT_FOUND;	//조회된 결과가 없으면 BARCODE_NOT_FOUND 익셉션
 
 		return nedrugUrl;
 	}
