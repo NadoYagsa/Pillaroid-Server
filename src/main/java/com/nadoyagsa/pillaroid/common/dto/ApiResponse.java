@@ -18,15 +18,16 @@ import lombok.NoArgsConstructor;
 public class ApiResponse<T> {	//TODO: 추후, 구체적인 오류사항이 담긴 Error 객체 만들고 ApiUtil로 클래스 바꾸기
 	public static final ApiResponse<String> SUCCESS = success("OK");	//body 없는 200 response
 
+	private Long errorIdx;
 	private HttpStatus errorStatusCode;
 	private String message;
 	private T data;
 
 	public static <T> ApiResponse<T> success(T data) {
-		return new ApiResponse<>(null, "", data);
+		return new ApiResponse<T>(null, null, null, data);
 	}
 
 	public static <T> ApiResponse<T> error(ErrorCode errorCode) {
-		return new ApiResponse<>(errorCode.getErrorStatus(), errorCode.getDetail(), null);
+		return new ApiResponse<>(errorCode.getErrorIdx(), errorCode.getErrorStatus(), errorCode.getDetail(), null);
 	}
 }
