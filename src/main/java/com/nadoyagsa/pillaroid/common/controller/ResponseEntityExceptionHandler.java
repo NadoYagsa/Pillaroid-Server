@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
@@ -39,4 +40,10 @@ public class ResponseEntityExceptionHandler {
 		return ApiResponse.error(ErrorCode.INTERNAL_ERROR);
 	}
 
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = {MethodArgumentTypeMismatchException.class})
+	protected ApiResponse methodArgumentTypeMismatchError(MethodArgumentTypeMismatchException ex) {
+		log.error(ex.getMessage());
+		return ApiResponse.error(ErrorCode.BAD_PARAMETER_TYPE);
+	}
 }
