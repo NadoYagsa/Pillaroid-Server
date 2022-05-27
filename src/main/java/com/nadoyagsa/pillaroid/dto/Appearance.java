@@ -1,10 +1,13 @@
 package com.nadoyagsa.pillaroid.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,13 +19,4 @@ public class Appearance {
     private String color;               // 색상
     private String dividingLine;        // 분할선
     private String identificationMark;  // 식별표기
-
-    public String toString() {
-        return "성상: " + appearance + "\\n" +
-                "제형: " + formulation + "\\n" +
-                "모양: " + shape + "\\n" +
-                "색상: " + color + "\\n" +
-                "분할선: " + dividingLine + "\\n" +
-                "식별표기: " + identificationMark;
-    }
 }
