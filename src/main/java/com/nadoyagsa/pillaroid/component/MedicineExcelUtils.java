@@ -1,9 +1,6 @@
 package com.nadoyagsa.pillaroid.component;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -24,7 +21,6 @@ import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
@@ -52,11 +48,12 @@ public class MedicineExcelUtils {
 	private final int INGREDIENT_COL = 9;	// J열: 성분정보
 
 	public MedicineResponse findMedicineExcelByCode(Long code) throws IOException {
-		ClassPathResource inputResource = new ClassPathResource("data/medicine.xlsx");
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data/medicine.xlsx");
 
-		FileInputStream file = new FileInputStream(new File(inputResource.getURI()));
-		XSSFWorkbook workbook = new XSSFWorkbook(file);
+		if (inputStream == null)
+			throw NotFoundException.MEDICINE_NOT_FOUND;
 
+		XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
 		XSSFSheet sheet = workbook.getSheetAt(0);
 		int rows = sheet.getPhysicalNumberOfRows();
 
@@ -76,11 +73,12 @@ public class MedicineExcelUtils {
 	}
 
 	public MedicineResponse findMedicineExcelByName(String name) throws IOException {
-		ClassPathResource inputResource = new ClassPathResource("data/medicine.xlsx");
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data/medicine.xlsx");
 
-		FileInputStream file = new FileInputStream(new File(inputResource.getURI()));
-		XSSFWorkbook workbook = new XSSFWorkbook(file);
+		if (inputStream == null)
+			throw NotFoundException.MEDICINE_NOT_FOUND;
 
+		XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
 		XSSFSheet sheet = workbook.getSheetAt(0);
 		int rows = sheet.getPhysicalNumberOfRows();
 
@@ -134,11 +132,12 @@ public class MedicineExcelUtils {
 	public List<VoiceResponse> findVoiceMedicineListByName(String name) throws IOException {
 		List<VoiceResponse> medicineList = new ArrayList<>();
 
-		ClassPathResource inputResource = new ClassPathResource("data/medicine.xlsx");
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data/medicine.xlsx");
 
-		FileInputStream file = new FileInputStream(new File(inputResource.getURI()));
-		XSSFWorkbook workbook = new XSSFWorkbook(file);
+		if (inputStream == null)
+			throw NotFoundException.MEDICINE_NOT_FOUND;
 
+		XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
 		XSSFSheet sheet = workbook.getSheetAt(0);
 		int rows = sheet.getPhysicalNumberOfRows();
 
@@ -173,11 +172,12 @@ public class MedicineExcelUtils {
 	public List<PrescriptionResponse> findPrescriptionMedicineListByName(String[] nameList) throws IOException {
 		List<PrescriptionResponse> medicineList = new ArrayList<>();
 
-		ClassPathResource inputResource = new ClassPathResource("data/medicine.xlsx");
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data/medicine.xlsx");
 
-		FileInputStream file = new FileInputStream(new File(inputResource.getURI()));
-		XSSFWorkbook workbook = new XSSFWorkbook(file);
+		if (inputStream == null)
+			throw NotFoundException.MEDICINE_NOT_FOUND;
 
+		XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
 		XSSFSheet sheet = workbook.getSheetAt(0);
 		int rows = sheet.getPhysicalNumberOfRows();
 
@@ -223,11 +223,12 @@ public class MedicineExcelUtils {
 	}
 
 	public void updateMedicineExcel() throws IOException {
-		ClassPathResource inputResource = new ClassPathResource("data/medicine.xlsx");
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data/medicine.xlsx");
 
-		FileInputStream file = new FileInputStream(new File(inputResource.getURI()));
-		XSSFWorkbook workbook = new XSSFWorkbook(file);
+		if (inputStream == null)
+			throw NotFoundException.MEDICINE_NOT_FOUND;
 
+		XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
 		XSSFSheet sheet = workbook.getSheetAt(0);
 		int rows = sheet.getPhysicalNumberOfRows();
 		int titleColIdx = 0;	//의약품명이 적힌 열의 Idx
@@ -270,6 +271,7 @@ public class MedicineExcelUtils {
 			}
 		}
 
+		// TODO: 파일 저장 경로 변경해야 함!
 		//파일에 저장
 		File currDir = new File(".");
 		String path = currDir.getAbsolutePath();
