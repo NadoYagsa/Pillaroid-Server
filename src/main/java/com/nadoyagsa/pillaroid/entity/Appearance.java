@@ -19,11 +19,6 @@ public class Appearance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer appearanceIdx;
 
-    @JsonIgnore
-    @OneToOne
-    @JoinColumn(name = "medicine_idx")
-    private Medicine medicine;
-
     @Column
     private String feature;             // 성상
 
@@ -41,15 +36,4 @@ public class Appearance {
 
     @Column(name = "identification_mark")
     private String identificationMark;  // 식별표기
-
-    @JsonIgnore
-    public PrescriptionResponse toPrescriptionResponse() {
-        return PrescriptionResponse.builder()
-                .medicineIdx(medicine.getMedicineIdx())
-                .name(medicine.getName())
-                .appearance(this)
-                .efficacy(medicine.getEfficacy())
-                .dosage(medicine.getDosage())
-                .build();
-    }
 }

@@ -12,9 +12,7 @@ import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
-import com.nadoyagsa.pillaroid.entity.Appearance;
 import com.nadoyagsa.pillaroid.entity.Medicine;
-import com.nadoyagsa.pillaroid.repository.AppearanceRepository;
 import com.nadoyagsa.pillaroid.repository.MedicineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,14 +20,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class MedicineService {
     private final MedicineRepository medicineRepository;
-    private final AppearanceRepository appearanceRepository;
 
     private final MedicineExcelUtils medicineExcelUtils;
 
     @Autowired
-    public MedicineService(MedicineRepository medicineRepository, AppearanceRepository appearanceRepository, MedicineExcelUtils medicineExcelUtils) {
+    public MedicineService(MedicineRepository medicineRepository, MedicineExcelUtils medicineExcelUtils) {
         this.medicineRepository = medicineRepository;
-        this.appearanceRepository = appearanceRepository;
         this.medicineExcelUtils = medicineExcelUtils;
     }
 
@@ -69,7 +65,7 @@ public class MedicineService {
     public List<PrescriptionResponse> getMedicineListByNameList(String[] nameList) throws IOException {
         List<PrescriptionResponse> medicineList = new ArrayList<>();
         for (String name : nameList) {
-            Optional<Appearance> medicine = appearanceRepository.findByMedicineName(name);
+            Optional<Medicine> medicine = medicineRepository.findFirstByNameStartingWith(name);
 
             if (medicine.isPresent())
                 medicineList.add(medicine.get().toPrescriptionResponse());

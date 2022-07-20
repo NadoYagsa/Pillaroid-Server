@@ -2,6 +2,7 @@ package com.nadoyagsa.pillaroid.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
+import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import lombok.*;
 
@@ -28,14 +29,18 @@ public class Medicine {
     @Column(name = "standard_code")
     private String standardCode;    // 의약품 표준코드
 
+    @OneToOne
+    @JoinColumn(name = "appearance_idx")
+    private Appearance appearance;  // 외형 정보
+
     @Column
     private String efficacy;        // 효능효과
 
     @Column
-    private String dosage;           // 용법용량
+    private String dosage;          // 용법용량
 
     @Column
-    private String precaution;     // 사용상 주의사항
+    private String precaution;      // 사용상 주의사항
 
     @Column
     private String ingredient;      // 성분정보
@@ -48,6 +53,7 @@ public class Medicine {
         return MedicineResponse.builder()
                 .medicineIdx(medicineIdx)
                 .name(name)
+                .appearance(appearance)
                 .efficacy(efficacy)
                 .dosage(dosage)
                 .precaution(precaution)
@@ -61,6 +67,17 @@ public class Medicine {
         return VoiceResponse.builder()
                 .medicineIdx(medicineIdx)
                 .name(name)
+                .build();
+    }
+
+    @JsonIgnore
+    public PrescriptionResponse toPrescriptionResponse() {
+        return PrescriptionResponse.builder()
+                .medicineIdx(medicineIdx)
+                .name(name)
+                .appearance(appearance)
+                .efficacy(efficacy)
+                .dosage(dosage)
                 .build();
     }
 }

@@ -15,7 +15,7 @@ public interface MedicineRepository extends JpaRepository <Medicine, Integer> {
     // 표준코드로 의약품 조회
     Optional<Medicine> findMedicineByStandardCode(String standardCode);
 
-    // 의약품명으로 시작하는 의약품 조회 (in case search)      //TODO: 맨 위를 할 지는 고려해야 함
+    // 의약품명으로 시작하는 의약품 조회 (in case search && prescription search)      //TODO: 맨 위를 할 지는 고려해야 함
     Optional<Medicine> findFirstByNameStartingWith(String title);
 
     // 의약품명을 포함하는 의약품 조회 (in voice search)
