@@ -1,5 +1,8 @@
 package com.nadoyagsa.pillaroid.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nadoyagsa.pillaroid.dto.MedicineResponse;
+import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import lombok.*;
 
 import javax.persistence.*;
@@ -29,7 +32,7 @@ public class Medicine {
     private String efficacy;        // 효능효과
 
     @Column
-    private String usage;           // 용법용량
+    private String dosage;           // 용법용량
 
     @Column
     private String precaution;     // 사용상 주의사항
@@ -39,4 +42,25 @@ public class Medicine {
 
     @Column
     private String save;            // 저장방법
+
+    @JsonIgnore
+    public MedicineResponse toMedicineResponse() {
+        return MedicineResponse.builder()
+                .medicineIdx(medicineIdx)
+                .name(name)
+                .efficacy(efficacy)
+                .dosage(dosage)
+                .precaution(precaution)
+                .ingredient(ingredient)
+                .save(save)
+                .build();
+    }
+
+    @JsonIgnore
+    public VoiceResponse toVoiceResponse() {
+        return VoiceResponse.builder()
+                .medicineIdx(medicineIdx)
+                .name(name)
+                .build();
+    }
 }

@@ -1,5 +1,7 @@
 package com.nadoyagsa.pillaroid.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import lombok.*;
 
 import javax.persistence.*;
@@ -11,11 +13,13 @@ import javax.persistence.*;
 @Builder
 @Getter
 public class Appearance {
+    @JsonIgnore
     @Id
     @Column(name = "appearance_idx")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer appearanceIdx;
 
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "medicine_idx")
     private Medicine medicine;
@@ -37,4 +41,15 @@ public class Appearance {
 
     @Column(name = "identification_mark")
     private String identificationMark;  // 식별표기
+
+    @JsonIgnore
+    public PrescriptionResponse toPrescriptionResponse() {
+        return PrescriptionResponse.builder()
+                .medicineIdx(medicine.getMedicineIdx())
+                .name(medicine.getName())
+                .appearance(this)
+                .efficacy(medicine.getEfficacy())
+                .dosage(medicine.getDosage())
+                .build();
+    }
 }

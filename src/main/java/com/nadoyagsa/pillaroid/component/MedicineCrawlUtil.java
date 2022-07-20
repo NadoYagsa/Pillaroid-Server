@@ -1,7 +1,7 @@
 package com.nadoyagsa.pillaroid.component;
 
-import com.nadoyagsa.pillaroid.dto.Appearance;
-import com.nadoyagsa.pillaroid.dto.Medicine;
+import com.nadoyagsa.pillaroid.dto.AppearanceCrawl;
+import com.nadoyagsa.pillaroid.dto.MedicineCrawl;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -15,7 +15,7 @@ import java.io.IOException;
 
 @Component
 public class MedicineCrawlUtil {
-    public Medicine getMedicineInfo(String medicineUrl) {
+    public MedicineCrawl getMedicineInfo(String medicineUrl) {
         Connection conn = Jsoup.connect(medicineUrl);
         try {
             Document document = conn.get();
@@ -35,7 +35,7 @@ public class MedicineCrawlUtil {
             }
             return getMedicineInfo(document);
         } catch (HttpStatusException e) {
-            return Medicine.builder().build();
+            return MedicineCrawl.builder().build();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -43,8 +43,8 @@ public class MedicineCrawlUtil {
         return null;
     }
 
-    public Medicine getMedicineInfo(Document document) {    // 지식백과에서의 의약품명 크롤링
-        Medicine medicine = new Medicine();
+    public MedicineCrawl getMedicineInfo(Document document) {    // 지식백과에서의 의약품명 크롤링
+        MedicineCrawl medicine = new MedicineCrawl();
 
         Elements nameElements = document.getElementsByClass("stress");
         for (Element nameElement : nameElements) {          // 외형정보, 성분정보, 저장방법, 효능효과, 용법용량, 사용상 주의사항
@@ -53,7 +53,7 @@ public class MedicineCrawlUtil {
 
             if (textElement != null) {
                 if (topic.equals("외형정보")) {
-                    Appearance appearanceInfo = new Appearance();
+                    AppearanceCrawl appearanceInfo = new AppearanceCrawl();
 
                     String[] splitTopic = textElement.html()
                             .split("<strong>");         // 외형정보 안의 소주제를 나눔
@@ -69,7 +69,7 @@ public class MedicineCrawlUtil {
                             continue;
 
                         if (information[0].contains("성상"))
-                            appearanceInfo.setAppearance(information[1].trim());
+                            appearanceInfo.setFeature(information[1].trim());
                         else if (information[0].contains("제형"))
                             appearanceInfo.setFormulation(information[1].trim());
                         else if (information[0].contains("모양"))
@@ -103,10 +103,10 @@ public class MedicineCrawlUtil {
                             medicine.setEfficacy(text);
                             break;
                         case "용법용량":
-                            medicine.setUsage(text);
+                            medicine.setDosage(text);
                             break;
                         case "사용상 주의사항":
-                            medicine.setPrecautions(text);
+                            medicine.setPrecaution(text);
                             break;
                     }
                 }

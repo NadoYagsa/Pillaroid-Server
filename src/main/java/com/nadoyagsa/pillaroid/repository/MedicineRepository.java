@@ -9,18 +9,17 @@ import java.util.Optional;
 
 @Repository
 public interface MedicineRepository extends JpaRepository <Medicine, Integer> {
-    // 의약품 번호로 의약품 조회
-    Optional<Medicine> findMedicineByMedicineIdx(int medicineIdx);
-
     // 품목일련번호로 의약품 조회
     Optional<Medicine> findMedicineBySerialNumber(int serialNumber);
 
     // 표준코드로 의약품 조회
     Optional<Medicine> findMedicineByStandardCode(String standardCode);
 
-    // 의약품명으로 시작하는 의약품 조회 (in case search)
-    List<Medicine> findAllByNameStartingWith(String title);
+    // 의약품명으로 시작하는 의약품 조회 (in case search)      //TODO: 맨 위를 할 지는 고려해야 함
+    Optional<Medicine> findFirstByNameStartingWith(String title);
 
     // 의약품명을 포함하는 의약품 조회 (in voice search)
     List<Medicine> findAllByNameContaining(String name);
+
+    // TODO: 처방전 이름 list를 받았을 시 전달받은 리스트의 이름으로 시작하는 의약품을 찾는 방법 연구 필요! (StartingWith와 IN의 결합)
 }
