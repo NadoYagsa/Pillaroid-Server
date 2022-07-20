@@ -26,7 +26,7 @@ public class Medicine {
     private String standardCode;    // 의약품 표준코드
 
     @OneToOne
-    private Appearance appearanceInfo;  // 외형정보
+    private Appearance appearance;  // 외형정보
 
     @Column
     private String efficacy;        // 효능효과
@@ -35,7 +35,7 @@ public class Medicine {
     private String usage;           // 용법용량
 
     @Column
-    private String precautions;     // 사용상 주의사항
+    private String precaution;     // 사용상 주의사항
 
     @Column
     private String ingredient;      // 성분정보
