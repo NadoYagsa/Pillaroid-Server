@@ -16,17 +16,14 @@ public class Medicine {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer medicineIdx;
 
-    @Column
+    @Column(nullable = false, unique = true)
     private String name;            // 의약품 이름
 
-    @Column(name = "serial_number", nullable = false)
+    @Column(name = "serial_number", nullable = false, unique = true)
     private int serialNumber;       // 의약품 품목일련번호
 
     @Column(name = "standard_code")
     private String standardCode;    // 의약품 표준코드
-
-    @OneToOne
-    private Appearance appearance;  // 외형정보
 
     @Column
     private String efficacy;        // 효능효과
