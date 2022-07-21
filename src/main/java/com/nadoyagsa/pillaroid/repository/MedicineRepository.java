@@ -21,5 +21,6 @@ public interface MedicineRepository extends JpaRepository <Medicine, Integer> {
     @Query("SELECT m FROM Medicine m WHERE m.name like :name%")
     List<Medicine> findMedicinesByStartingName(@Param("name") String name);
 
-    List<Medicine> findAllByNameContaining(String name);
+    @Query("SELECT m FROM Medicine m WHERE m.name like %:name%")
+    List<Medicine> findMedicinesByContainingName(@Param("name") String name);
 }

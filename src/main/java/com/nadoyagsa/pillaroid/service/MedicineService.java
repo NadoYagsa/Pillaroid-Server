@@ -69,7 +69,7 @@ public class MedicineService {
     }
 
     public List<VoiceResponse> getMedicineListByName(String name) {
-        List<Medicine> medicineList = medicineRepository.findAllByNameContaining(name);
+        List<Medicine> medicineList = medicineRepository.findMedicinesByContainingName(name);
 
         if (medicineList.size() == 0)
             throw NotFoundException.MEDICINE_NOT_FOUND;
@@ -84,12 +84,17 @@ public class MedicineService {
             List<Medicine> medicineList = medicineRepository.findMedicinesByStartingName(name);
 
             // DB에 저장된 제품명에서 괄호를 제거하고 동일한 의약품명이 있다면 해당 의약품 정보 전달 else 가장 먼저 조회된 결과 전달
+            boolean isAdded = false;
             for (Medicine medicine : medicineList) {
-                if (medicine.getName().strip().equals(name))
+                if (medicine.getName().strip().equals(name)) {
                     prescriptionList.add(medicine.toPrescriptionResponse());
+
+                    isAdded = true;
+                    break;
+                }
             }
 
-            if (medicineList.size() != 0)
+            if (!isAdded)
                 prescriptionList.add(medicineList.get(0).toPrescriptionResponse());
         }
         return prescriptionList;

@@ -30,7 +30,7 @@ public class MedicineController {
 
     // 의약품 번호로 정보 조회
     @GetMapping
-    public ApiResponse<MedicineResponse> getMedicineInfo(@RequestParam int idx) throws IOException {
+    public ApiResponse<MedicineResponse> getMedicineInfo(@RequestParam int idx) {
         Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByIdx(idx);
 
         if (medicineResponse.isPresent())
@@ -73,7 +73,7 @@ public class MedicineController {
 
     // 음성을 통한 의약품명으로 의약품 리스트 조회
     @GetMapping("/voice")
-    public ApiResponse<List<VoiceResponse>> getVoiceMedicineInfo(@RequestParam String name) throws IOException {
+    public ApiResponse<List<VoiceResponse>> getVoiceMedicineInfo(@RequestParam String name) {
         if (!name.strip().equals(""))
             return ApiResponse.success(medicineService.getMedicineListByName(name.strip()));
         else
@@ -82,7 +82,7 @@ public class MedicineController {
 
     // 처방전을 통한 의약품명으로 의약품 리스트 조회
     @GetMapping("/prescription")
-    public ApiResponse<List<PrescriptionResponse>> getPrescriptionMedicineInfo(@RequestParam String names) throws IOException {
+    public ApiResponse<List<PrescriptionResponse>> getPrescriptionMedicineInfo(@RequestParam String names) {
         String[] nameList = names.split(",");
 
         if (nameList.length > 0)
