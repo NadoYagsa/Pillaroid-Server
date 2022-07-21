@@ -63,7 +63,7 @@ public class MedicineController {
     @GetMapping("/voice")
     public ApiResponse<List<VoiceResponse>> getVoiceMedicineInfo(@RequestParam String name) throws IOException {
         if (!name.strip().equals(""))
-            return ApiResponse.success(medicineService.getMedicineListByName(name));
+            return ApiResponse.success(medicineService.getMedicineListByName(name.strip()));
         else
             throw BadRequestException.BAD_PARAMETER;
     }

@@ -1,7 +1,6 @@
 package com.nadoyagsa.pillaroid.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import lombok.*;
 
 import javax.persistence.*;
