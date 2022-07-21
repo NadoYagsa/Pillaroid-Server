@@ -23,9 +23,11 @@ public class Medicine {
     @Column(nullable = false, unique = true)
     private String name;            // 의약품 이름
 
+    @JsonIgnore
     @Column(name = "serial_number", nullable = false, unique = true)
     private int serialNumber;       // 의약품 품목일련번호
 
+    @JsonIgnore
     @Column(name = "standard_code")
     private String standardCode;    // 의약품 표준코드
 
