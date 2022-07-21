@@ -8,6 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Builder
 public class VoiceResponse {
-    private Long idx;		//품목일련번호(추후 idx로 변경 예정)
-    private String name;	//제품명
+    private int medicineIdx;    // 의약품 번호
+    private String name;	    // 제품명
 }
