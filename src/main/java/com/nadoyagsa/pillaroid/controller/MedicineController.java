@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
+import com.nadoyagsa.pillaroid.component.MedicineExcelUtils;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
@@ -25,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class MedicineController {
     private final MedicineService medicineService;
     private final BarcodeService barcodeService;
+    private final MedicineExcelUtils medicineExcelUtils;
 
     // 의약품 번호로 정보 조회
     @GetMapping
@@ -44,19 +46,29 @@ public class MedicineController {
             @RequestParam(required = false) String barcode) throws IOException {
         if (name != null && !name.equals("")) {
             Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByCaseName(name);
+
             if (medicineResponse.isPresent())
                 return ApiResponse.success(medicineResponse.get());
             else
                 throw NotFoundException.MEDICINE_NOT_FOUND;
+
         } else if (barcode != null && !barcode.equals("")) {
             Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByStandardCode(barcode);
+
             if (medicineResponse.isPresent())
                 return ApiResponse.success(medicineResponse.get());
-            else    // TODO: 바코드 없을 때 크롤링 수행
-                throw NotFoundException.BARCODE_NOT_FOUND;
-        } else {
-            throw BadRequestException.BAD_PARAMETER;
+            else {
+                String serialNumber = barcodeService.crawlSerialNumber(barcode);  // 바코드 번호로 품목일련번호 크롤링
+                medicineResponse = medicineService.getMedicineInfoBySerialNumber(Integer.parseInt(serialNumber));
+
+                if (medicineResponse.isPresent())
+                    return ApiResponse.success(medicineResponse.get());
+                else
+                    throw NotFoundException.BARCODE_NOT_FOUND;
+            }
         }
+        else 
+            throw BadRequestException.BAD_PARAMETER;
     }
 
     // 음성을 통한 의약품명으로 의약품 리스트 조회

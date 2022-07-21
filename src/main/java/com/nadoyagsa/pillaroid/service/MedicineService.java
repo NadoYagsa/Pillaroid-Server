@@ -37,6 +37,14 @@ public class MedicineService {
             return Optional.ofNullable(medicine.get().toMedicineResponse());
     }
 
+    public Optional<MedicineResponse> getMedicineInfoBySerialNumber(int serialNumber) {
+        Optional<Medicine> medicine = medicineRepository.findMedicineBySerialNumber(serialNumber);
+        if (medicine.isEmpty())
+            return Optional.empty();
+        else
+            return Optional.ofNullable(medicine.get().toMedicineResponse());
+    }
+
     public Optional<MedicineResponse> getMedicineInfoByCaseName(String name) {
         List<Medicine> medicineList = medicineRepository.findMedicinesByStartingName(name);
 
@@ -87,7 +95,7 @@ public class MedicineService {
         return prescriptionList;
     }
 
-    public boolean updateMedicineInfoInExcel() {    //TODO: DB에 새로운 알약 정보 추가해야 함!
+    public boolean updateMedicineInfoInExcel() {
         try {
             medicineExcelUtils.updateMedicineExcel();
             return true;
