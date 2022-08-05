@@ -90,4 +90,11 @@ public class MedicineController {
         else
             throw BadRequestException.BAD_PARAMETER;
     }
+
+    // 알약 공감 개수 크롤링 및 엑셀 저장
+    @GetMapping("/pot-crawl")
+    public ApiResponse potPopularityCrawl(@RequestParam int startIdx, @RequestParam int endIdx) throws IOException, InterruptedException {
+        medicineExcelUtils.writePotPopularity(startIdx, endIdx);
+        return ApiResponse.SUCCESS;
+    }
 }

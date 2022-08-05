@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +18,11 @@ import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Component;
 
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
@@ -191,5 +198,89 @@ public class MedicineExcelUtils {
 				medicineRepository.save(medicine);
 			}
 		}
+	}
+
+	// 의약품의 공감 개수를 엑셀에 저장
+	public void writePotPopularity(int startIdx, int endIdx) throws IOException, InterruptedException {
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data/pot.xlsx");
+
+		if (inputStream == null)
+			throw NotFoundException.MEDICINE_NOT_FOUND;
+
+		XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+		XSSFSheet sheet = workbook.getSheetAt(0);
+		int titleColIdx = 1;	// 제품명이 적힌 열의 Idx
+
+		for (int rowIdx = startIdx; rowIdx < endIdx; rowIdx++) {
+			XSSFRow row = sheet.getRow(rowIdx);
+			if (row != null) {
+				// 엑셀 파일에서 제품명 읽기
+				XSSFCell cell = row.getCell(titleColIdx);
+				String itemName = cell.getStringCellValue();
+
+				// NAVER 지식백과에서 제품명에 대한 최상위 결과 조회 (productName, popularityCount)
+				Pair<String, Integer> productMeta = crawlProductForPot(itemName);
+
+				// C, D열에 크롤링한 제품명, 공감 개수 넣기
+				XSSFCell searchedProductNameCell = row.createCell(2);
+				searchedProductNameCell.setCellValue(productMeta.getFirst());
+
+				XSSFCell searchedPopularityCell = row.createCell(3);
+				searchedPopularityCell.setCellValue(productMeta.getSecond());
+			}
+		}
+
+		// 파일에 저장
+		File currDir = new File(".");
+		String path = currDir.getAbsolutePath();
+		String fileLocation = path.substring(0, path.length() - 1) + "/src/main/resources/data/pot_result.xlsx";
+		FileOutputStream outStream = new FileOutputStream(fileLocation);
+		workbook.write(outStream);
+		workbook.close();
+	}
+
+	// 크롤링으로 검색된 의약품명과 공감 개수 반환 (동적 페이지를 크롤링해야 하기 때문에 셀레니움 이용)
+	public Pair<String, Integer> crawlProductForPot(String itemName) throws InterruptedException {
+		String encodingItemName = URLEncoder.encode(itemName, StandardCharsets.UTF_8);
+		String wikipediaUrl = "https://terms.naver.com/medicineSearch.naver?mode=nameSearch&query="+ encodingItemName;
+
+		System.setProperty("webdriver.chrome.driver",
+				"C:\\Users\\soeun kim\\Downloads\\chromedriver_win32\\chromedriver.exe");
+
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--disable-popup-blocking");   	// 팝업 안띄움
+		options.addArguments("headless");                   // 브라우저 안띄움
+		options.addArguments("--disable-gpu");				// gpu 비활성화
+		options.addArguments("--blink-settings=imagesEnabled=false"); // 이미지 다운 안받음
+
+		WebDriver driver = new ChromeDriver(options);
+
+		driver.get(wikipediaUrl);
+		Thread.sleep(700); // 브라우저 로딩될때까지 잠시 기다려야 함 (TODO: 인터넷 상황에 맞게 타임 조절하시오!)
+
+		List<WebElement> elements = driver.findElements(By.cssSelector(".content_list"));
+		Optional<WebElement> firstElement = elements.stream().findFirst();
+
+		String productName = null;
+		Integer popularity = 0;
+		if (firstElement.isPresent()) {
+			productName = firstElement.get()
+					.findElement(By.cssSelector(".info_area .title strong"))
+					.getText();
+
+			System.out.println("productName = " + productName);	//TODO: 확인 안할거면 지워도 됨!
+
+			String popularityValue = firstElement.get().findElement(By.cssSelector(".u_likeit_text")).getText();
+			if (!popularityValue.equals("공감")) {
+				popularity = Integer.parseInt(popularityValue);
+			}
+
+			System.out.println("popularity = " + popularity);	//TODO: 확인 안할거면 지워도 됨!
+		}
+
+		driver.close();	// 탭 닫기
+		driver.quit(); 	// 브라우저 닫기
+
+		return Pair.create(productName, popularity);
 	}
 }
