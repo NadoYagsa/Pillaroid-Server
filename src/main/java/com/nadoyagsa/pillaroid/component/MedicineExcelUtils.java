@@ -214,6 +214,8 @@ public class MedicineExcelUtils {
 		for (int rowIdx = startIdx; rowIdx < endIdx; rowIdx++) {
 			XSSFRow row = sheet.getRow(rowIdx);
 			if (row != null) {
+				System.out.println("row = " + rowIdx);
+
 				// 엑셀 파일에서 제품명 읽기
 				XSSFCell cell = row.getCell(titleColIdx);
 				String itemName = cell.getStringCellValue();
@@ -245,7 +247,7 @@ public class MedicineExcelUtils {
 		String wikipediaUrl = "https://terms.naver.com/medicineSearch.naver?mode=nameSearch&query="+ encodingItemName;
 
 		System.setProperty("webdriver.chrome.driver",
-				"C:\\Users\\soeun kim\\Downloads\\chromedriver_win32\\chromedriver.exe");
+				"C:\\Users\\soeun kim\\Downloads\\chromedriver_win32_104\\chromedriver.exe");
 
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments("--disable-popup-blocking");   	// 팝업 안띄움
@@ -256,26 +258,28 @@ public class MedicineExcelUtils {
 		WebDriver driver = new ChromeDriver(options);
 
 		driver.get(wikipediaUrl);
-		Thread.sleep(700); // 브라우저 로딩될때까지 잠시 기다려야 함 (TODO: 인터넷 상황에 맞게 타임 조절하시오!)
+		Thread.sleep(800); // 브라우저 로딩될때까지 잠시 기다려야 함 (TODO: 인터넷 상황에 맞게 타임 조절하시오!)
 
 		List<WebElement> elements = driver.findElements(By.cssSelector(".content_list"));
 		Optional<WebElement> firstElement = elements.stream().findFirst();
 
 		String productName = null;
 		Integer popularity = 0;
+
 		if (firstElement.isPresent()) {
 			productName = firstElement.get()
 					.findElement(By.cssSelector(".info_area .title strong"))
 					.getText();
 
-			System.out.println("productName = " + productName);	//TODO: 확인 안할거면 지워도 됨!
-
 			String popularityValue = firstElement.get().findElement(By.cssSelector(".u_likeit_text")).getText();
-			if (!popularityValue.equals("공감")) {
-				popularity = Integer.parseInt(popularityValue);
+			if (!popularityValue.equals("공감")) {	// 공감이면 0
+				if (popularityValue.equals("")) {	// 로딩되지 않으면, -1
+					popularity = -1;
+				} else {
+					String popularityValue2 = popularityValue.replace(",", "");
+					popularity = Integer.parseInt(popularityValue2);
+				}
 			}
-
-			System.out.println("popularity = " + popularity);	//TODO: 확인 안할거면 지워도 됨!
 		}
 
 		driver.close();	// 탭 닫기
