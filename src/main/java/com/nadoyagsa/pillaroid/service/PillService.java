@@ -3,6 +3,7 @@ package com.nadoyagsa.pillaroid.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 import com.nadoyagsa.pillaroid.dto.PillModelResponse;
+import com.nadoyagsa.pillaroid.dto.PillResponse;
 import com.nadoyagsa.pillaroid.entity.Medicine;
 import com.nadoyagsa.pillaroid.repository.MedicineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class PillService {
         this.medicineRepository = medicineRepository;
     }
 
-    public Optional<MedicineResponse> getMedicineInfoByPillImage(MultipartFile pillImage) throws IOException {
+    public Optional<PillResponse> getMedicineInfoByPillImage(MultipartFile pillImage) throws IOException {
         // 플라스크 서버로 이미지 전달 후 알약 조회
         URI uri = UriComponentsBuilder
                 //TODO: 실험용으로 서버 주소 변경
@@ -71,7 +72,7 @@ public class PillService {
             if (medicine.isEmpty())
                 return Optional.empty();
             else
-                return Optional.ofNullable(medicine.get().toMedicineResponse());
+                return Optional.ofNullable(medicine.get().toPillResponse());
         }
 
         else
