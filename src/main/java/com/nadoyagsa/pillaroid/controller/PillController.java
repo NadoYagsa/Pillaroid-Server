@@ -2,7 +2,7 @@ package com.nadoyagsa.pillaroid.controller;
 
 import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
-import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
+import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.dto.PillResponse;
 import com.nadoyagsa.pillaroid.service.PillService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class PillController {
             if (medicineResponse.isPresent())   // 조회된 알약이 있을 시
                 return ApiResponse.success(medicineResponse.get());
             else                                // 조회된 알약이 없을 시
-                throw NotFoundException.MEDICINE_NOT_FOUND;
+                throw InternalServerException.INTERNAL_ERROR;
         }
         else
             throw BadRequestException.BAD_PARAMETER;
