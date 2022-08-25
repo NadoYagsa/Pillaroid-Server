@@ -112,7 +112,7 @@ public class MedicineService {
             boolean isAdded = false;
             for (Medicine medicine : medicineList) {
                 if (medicine.getName().strip().equals(name)) {
-                    Optional<Favorites> favorites = favoritesRepository.findFavoritesByUserAndMedicine(userIdx, medicine.getMedicineIdx());
+                    Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, medicine.getMedicineIdx());
 
                     if (favorites.isPresent())
                         prescriptionList.add(medicine.toPrescriptionResponse(true));
@@ -126,7 +126,7 @@ public class MedicineService {
 
             if (!isAdded) {
                 Medicine firstMedicine = medicineList.get(0);
-                Optional<Favorites> favorites = favoritesRepository.findFavoritesByUserAndMedicine(userIdx, firstMedicine.getMedicineIdx());
+                Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, firstMedicine.getMedicineIdx());
 
                 if (favorites.isPresent())
                     prescriptionList.add(firstMedicine.toPrescriptionResponse(true));
@@ -135,6 +135,12 @@ public class MedicineService {
             }
         }
         return prescriptionList;
+    }
+
+
+    // 의약품 번호와 회원 번호로 즐겨찾기 조회
+    public Optional<Favorites> findFavoritesByUserAndMedicineIdx(Long userIdx, int medicineIdx) {
+        return favoritesRepository.findFavoritesByUserAndMedicine(userIdx, medicineIdx);
     }
 
     public boolean updateMedicineInfoInExcel() {

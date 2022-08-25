@@ -1,5 +1,6 @@
 package com.nadoyagsa.pillaroid.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nadoyagsa.pillaroid.entity.Appearance;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,5 +24,10 @@ public class MedicineResponse {
 	private String ingredient;      // 성분정보
 	private String save;            // 저장방법
 
-	private boolean isLogin = false;
+	private boolean isFavorites = false;
+
+	@JsonIgnore
+	public void setFavoritesTrue() {
+		isFavorites = true;
+	}
 }
