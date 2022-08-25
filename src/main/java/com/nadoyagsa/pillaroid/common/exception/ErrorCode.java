@@ -15,6 +15,9 @@ public enum ErrorCode {
 	BAD_PARAMETER_TYPE(40002, BAD_REQUEST, "지원하지 않는 파라미터 형식입니다."),
 	NOT_SUPPORTED_BARCODE_FORMAT(40003, BAD_REQUEST, "지원하지 않는 바코드 형식입니다."),
 
+	/* 401 UNAUTHORIZED: 인증 자격 없음 */
+	UNAUTHORIZED_USER(401, UNAUTHORIZED, "인증된 사용자가 아닙니다."),
+
 	/* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
 	DATA_NOT_FOUND(40403, NOT_FOUND, "해당 정보가 없습니다."),
 	BARCODE_NOT_FOUND(40401, NOT_FOUND, "해당 바코드에 대한 정보가 없습니다."),
