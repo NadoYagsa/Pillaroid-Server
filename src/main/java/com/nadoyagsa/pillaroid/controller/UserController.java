@@ -1,0 +1,125 @@
+package com.nadoyagsa.pillaroid.controller;
+
+import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
+import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
+import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
+import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
+import com.nadoyagsa.pillaroid.common.exception.UnauthorizedException;
+import com.nadoyagsa.pillaroid.dto.FavoritesDTO;
+import com.nadoyagsa.pillaroid.dto.FavoritesResponse;
+import com.nadoyagsa.pillaroid.entity.Favorites;
+import com.nadoyagsa.pillaroid.entity.User;
+import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
+import com.nadoyagsa.pillaroid.service.FavoritesService;
+import com.nadoyagsa.pillaroid.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(value = "/user")
+public class UserController {
+    private final AuthTokenProvider authTokenProvider;
+    private final UserService userService;
+    private final FavoritesService favoritesService;
+
+    @Autowired
+    public UserController(AuthTokenProvider authTokenProvider, UserService userService, FavoritesService favoritesService) {
+        this.authTokenProvider = authTokenProvider;
+        this.userService = userService;
+        this.favoritesService = favoritesService;
+    }
+
+    // 사용자의 즐겨찾기 목록 조회
+    @GetMapping(value = "/favorites")
+    public ApiResponse<List<FavoritesResponse>> getUserFavorites(HttpServletRequest request) throws IllegalStateException {
+        Optional<User> user = findUserByToken(request);
+
+        if (user.isPresent()) {
+            List<FavoritesResponse> favoritesList = favoritesService.findFavoritesListByUserIdx(user.get().getUserIdx());
+
+            if (favoritesList.size() > 0)   // 회원의 즐겨찾기 목록 o
+                return ApiResponse.success(favoritesList);
+            else                            // 회원의 즐겨찾기 목록 x
+                throw NotFoundException.DATA_NOT_FOUND;
+        }
+        else
+            throw UnauthorizedException.UNAUTHORIZED_USER;
+    }
+
+    // 즐겨찾기 추가
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = "/favorites")
+    public ApiResponse postUserFavorites(HttpServletRequest request, @RequestBody FavoritesDTO favoritesDTO) throws IllegalStateException {
+        Optional<User> user = findUserByToken(request);
+
+        if (user.isPresent()) {
+            favoritesDTO.setUserIdx(user.get().getUserIdx());
+
+            boolean isSaved = favoritesService.saveFavorites(favoritesDTO.toFavoritesEntity());
+            if (isSaved)
+                return ApiResponse.SUCCESS;
+            else
+                throw InternalServerException.INTERNAL_ERROR;
+        }
+        else
+            throw UnauthorizedException.UNAUTHORIZED_USER;
+    }
+
+    // 즐겨찾기 삭제
+    @DeleteMapping(value = "/favorites/{fid}")
+    public ApiResponse deleteUserFavorites(HttpServletRequest request, @PathVariable("fid") Long favoritesIdx) throws IllegalStateException {
+        Optional<Favorites> favorites = favoritesService.findFavoritesByIdx(favoritesIdx);
+
+        if (favorites.isPresent()) {
+            Optional<User> user = findUserByToken(request);
+
+            // 본인의 즐겨찾기 목록인 경우
+            if (user.isPresent() && (user.get().getUserIdx().equals(favorites.get().getUser().getUserIdx()))) {
+                boolean isDeleted = favoritesService.deleteFavorites(favoritesIdx);
+
+                if (isDeleted)
+                    return ApiResponse.SUCCESS;
+                else
+                    throw InternalServerException.INTERNAL_ERROR;
+            }
+            else
+                throw UnauthorizedException.UNAUTHORIZED_USER;
+        }
+        else {
+            throw BadRequestException.BAD_PARAMETER;
+        }
+    }
+
+    // 사용자의 즐겨찾기 목록 조회
+    @GetMapping(value = "/favorites/search")
+    public ApiResponse<List<FavoritesResponse>> getUserFavorites(HttpServletRequest request, @RequestParam String keyword) throws IllegalStateException {
+        Optional<User> user = findUserByToken(request);
+
+        if (user.isPresent()) {
+            List<FavoritesResponse> favoritesList = favoritesService.findFavoritesListByKeyword(user.get().getUserIdx(), keyword);
+
+            if (favoritesList.size() > 0)   // 회원의 즐겨찾기 목록 중 검색 결과 o
+                return ApiResponse.success(favoritesList);
+            else                            // 회원의 즐겨찾기 목록 중 검색 결과 x
+                throw NotFoundException.DATA_NOT_FOUND;
+        }
+        else
+            throw UnauthorizedException.UNAUTHORIZED_USER;
+    }
+
+    public Optional<User> findUserByToken(HttpServletRequest request) {
+        try {
+            // 접근 사용자 조회
+            Long accountId = (Long) authTokenProvider.getClaims(request.getHeader("authorization")).get("accountId");
+
+            return userService.findUserByKakaoAccountId(accountId);
+        } catch (Exception e) {
+            throw InternalServerException.INTERNAL_ERROR;
+        }
+    }
+}
