@@ -2,6 +2,7 @@ package com.nadoyagsa.pillaroid.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
+import com.nadoyagsa.pillaroid.dto.PillResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import lombok.*;
@@ -61,6 +62,13 @@ public class Medicine {
                 .precaution(precaution)
                 .ingredient(ingredient)
                 .save(save)
+                .build();
+    }
+
+    @JsonIgnore
+    public PillResponse toPillResponse() {
+        return PillResponse.builder()
+                .medicineIdx(medicineIdx)
                 .build();
     }
 
