@@ -6,11 +6,13 @@ import java.util.Optional;
 
 import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
+import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
 import com.nadoyagsa.pillaroid.component.MedicineExcelUtils;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
+import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
 import com.nadoyagsa.pillaroid.service.BarcodeService;
 import com.nadoyagsa.pillaroid.service.MedicineService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/medicine")
@@ -27,6 +31,8 @@ public class MedicineController {
     private final MedicineService medicineService;
     private final BarcodeService barcodeService;
     private final MedicineExcelUtils medicineExcelUtils;
+
+    private final AuthTokenProvider authTokenProvider;
 
     // 의약품 번호로 정보 조회
     @GetMapping
@@ -82,12 +88,29 @@ public class MedicineController {
 
     // 처방전을 통한 의약품명으로 의약품 리스트 조회
     @GetMapping("/prescription")
-    public ApiResponse<List<PrescriptionResponse>> getPrescriptionMedicineInfo(@RequestParam String names) {
+    public ApiResponse<List<PrescriptionResponse>> getPrescriptionMedicineInfo(HttpServletRequest request, @RequestParam String names) {
         String[] nameList = names.split(",");
 
-        if (nameList.length > 0)
-            return ApiResponse.success(medicineService.getMedicineListByNameList(nameList));
+        if (nameList.length > 0) {
+            Long userIdx = null;
+            if (request.getHeader("authorization") != null) {
+                // 로그인 된 사용자라면 즐겨찾기 여부를 보여줌
+                userIdx = findUserIdxByToken(request);
+            }
+            List<PrescriptionResponse> medicineList = medicineService.getMedicineListByNameList(nameList, userIdx);
+
+            return ApiResponse.success(medicineList);
+        }
         else
             throw BadRequestException.BAD_PARAMETER;
+    }
+
+    // 사용자 jwt 토큰으로부터 회원 정보 조회
+    public Long findUserIdxByToken(HttpServletRequest request) {
+        try {
+            return authTokenProvider.getClaims(request.getHeader("authorization")).get("userId", Long.class);
+        } catch (Exception e) {
+            throw InternalServerException.INTERNAL_ERROR;
+        }
     }
 }

@@ -22,4 +22,6 @@ public class MedicineResponse {
 	private String precaution;     	// 사용상 주의사항
 	private String ingredient;      // 성분정보
 	private String save;            // 저장방법
+
+	private boolean isLogin = false;
 }

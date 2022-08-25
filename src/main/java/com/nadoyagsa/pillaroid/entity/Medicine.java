@@ -81,13 +81,14 @@ public class Medicine {
     }
 
     @JsonIgnore
-    public PrescriptionResponse toPrescriptionResponse() {
+    public PrescriptionResponse toPrescriptionResponse(boolean isFavorites) {
         return PrescriptionResponse.builder()
                 .medicineIdx(medicineIdx)
                 .name(name)
                 .appearance(appearance)
                 .efficacy(efficacy)
                 .dosage(dosage)
+                .isFavorites(isFavorites)
                 .build();
     }
 }

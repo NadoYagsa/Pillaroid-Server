@@ -15,8 +15,9 @@ public interface FavoritesRepository extends JpaRepository <Favorites, Long> {
     // 회원 idx로 즐겨찾기 목록 조회
     List<Favorites> findAllByUser_UserIdx(Long userIdx);
 
-    // 의약품 idx로 즐겨찾기 조회
-    Optional<Favorites> findFavoritesByMedicine_MedicineIdx(int medicineIdx);
+    // 회원 idx와 의약품 idx로 즐겨찾기 조회
+    @Query("SELECT f FROM Favorites f WHERE f.user.userIdx = :userIdx AND f.medicine.medicineIdx = :medicineIdx")
+    Optional<Favorites> findFavoritesByUserAndMedicine(@Param("userIdx") Long userIdx, @Param("medicineIdx") int medicineIdx);
 
     // 의약품 키워드로 즐겨찾기 조회
     @Query("SELECT f FROM Favorites f WHERE f.user.userIdx = :userIdx AND f.medicine.name like %:keyword%")

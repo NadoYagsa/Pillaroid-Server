@@ -29,7 +29,7 @@ public class AuthTokenProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // 토큰의 payload에 카카오 회원번호를 삽입
+    // 토큰의 payload에 회원 번호를 삽입
     public String createAuthToken(Long userIdx) {
         return Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)

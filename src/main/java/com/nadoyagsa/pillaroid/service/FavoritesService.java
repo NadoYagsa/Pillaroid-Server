@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class FavoritesService {
-
     private final FavoritesRepository favoritesRepository;
 
     @Autowired
@@ -27,11 +26,6 @@ public class FavoritesService {
     // 즐겨찾기 번호로 조회
     public Optional<Favorites> findFavoritesByIdx(Long favoritesIdx) {
         return favoritesRepository.findById(favoritesIdx);
-    }
-
-    // 의약품 번호로 즐겨찾기 조회
-    public Optional<Favorites> findFavoritesByMedicineIdx(int medicineIdx) {
-        return favoritesRepository.findFavoritesByMedicine_MedicineIdx(medicineIdx);
     }
 
     // 회원 번호로 즐겨찾기 목록 조회

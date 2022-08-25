@@ -112,12 +112,13 @@ public class UserController {
             throw UnauthorizedException.UNAUTHORIZED_USER;
     }
 
+    // 사용자 jwt 토큰으로부터 회원 정보 조회
     public Optional<User> findUserByToken(HttpServletRequest request) {
         try {
             // 접근 사용자 조회
-            Long accountId = (Long) authTokenProvider.getClaims(request.getHeader("authorization")).get("accountId");
+            Long userIdx = authTokenProvider.getClaims(request.getHeader("authorization")).get("userId", Long.class);
 
-            return userService.findUserByKakaoAccountId(accountId);
+            return userService.findUserById(userIdx);
         } catch (Exception e) {
             throw InternalServerException.INTERNAL_ERROR;
         }
