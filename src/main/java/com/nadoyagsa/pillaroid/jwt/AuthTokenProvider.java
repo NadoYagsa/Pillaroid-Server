@@ -30,12 +30,12 @@ public class AuthTokenProvider implements InitializingBean {
     }
 
     // 토큰의 payload에 카카오 회원번호를 삽입
-    public String createAuthToken(Long kakaoAccountId) {
+    public String createAuthToken(Long userIdx) {
         return Jwts.builder()
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
                 .setIssuer("pillaroid")
                 .setIssuedAt(new Date())
-                .claim("accountId", kakaoAccountId)
+                .claim("userId", userIdx)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
