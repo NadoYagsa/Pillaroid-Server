@@ -24,7 +24,7 @@ public enum ErrorCode {
 	MEDICINE_NOT_FOUND(40402, NOT_FOUND, "조건에 맞는 의약품이 존재하지 않습니다."),
 
 	/* 500 INTERNAL_SERVER_ERROR : 서버 오류 */
-	INTERNAL_ERROR(50001, INTERNAL_SERVER_ERROR, "서버 내부 오류로 인해 응답을 제공할 수 없습니다.");
+	INTERNAL_ERROR(500, INTERNAL_SERVER_ERROR, "서버 내부 오류로 인해 응답을 제공할 수 없습니다.");
 
 	private final long errorIdx;	//에러 식별코드
 	private final HttpStatus errorStatus;
