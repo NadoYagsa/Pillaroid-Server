@@ -90,7 +90,7 @@ public class MedicineService {
             boolean isAdded = false;
             for (Medicine medicine : medicineList) {
                 if (medicine.getName().strip().equals(name)) {
-                    prescriptionList.add(medicine.toPrescriptionResponse(false));
+                    prescriptionList.add(medicine.toPrescriptionResponse(null));
 
                     isAdded = true;
                     break;
@@ -98,7 +98,7 @@ public class MedicineService {
             }
 
             if (!isAdded)
-                prescriptionList.add(medicineList.get(0).toPrescriptionResponse(false));
+                prescriptionList.add(medicineList.get(0).toPrescriptionResponse(null));
         }
         return prescriptionList;
     }
@@ -115,9 +115,9 @@ public class MedicineService {
                     Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, medicine.getMedicineIdx());
 
                     if (favorites.isPresent())
-                        prescriptionList.add(medicine.toPrescriptionResponse(true));
+                        prescriptionList.add(medicine.toPrescriptionResponse(favorites.get().getFavoritesIdx()));
                     else
-                        prescriptionList.add(medicine.toPrescriptionResponse(false));
+                        prescriptionList.add(medicine.toPrescriptionResponse(null));
 
                     isAdded = true;
                     break;
@@ -129,9 +129,9 @@ public class MedicineService {
                 Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, firstMedicine.getMedicineIdx());
 
                 if (favorites.isPresent())
-                    prescriptionList.add(firstMedicine.toPrescriptionResponse(true));
+                    prescriptionList.add(firstMedicine.toPrescriptionResponse(favorites.get().getFavoritesIdx()));
                 else
-                    prescriptionList.add(firstMedicine.toPrescriptionResponse(false));
+                    prescriptionList.add(firstMedicine.toPrescriptionResponse(null));
             }
         }
         return prescriptionList;

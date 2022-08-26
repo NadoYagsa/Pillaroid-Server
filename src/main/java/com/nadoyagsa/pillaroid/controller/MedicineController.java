@@ -46,7 +46,7 @@ public class MedicineController {
                 Optional<Favorites> favorites = medicineService.findFavoritesByUserAndMedicineIdx(userIdx, idx);
 
                 if (favorites.isPresent()) {    // 즐겨찾기 설정을 했을 시
-                    medicineResponse.get().setFavoritesTrue();
+                    medicineResponse.get().setFavoritesIdx(favorites.get().getFavoritesIdx());
                 }
             }
             return ApiResponse.success(medicineResponse.get());
@@ -135,7 +135,7 @@ public class MedicineController {
             Optional<Favorites> favorites = medicineService.findFavoritesByUserAndMedicineIdx(userIdx, medicineResponse.getMedicineIdx());
 
             if (favorites.isPresent()) {    // 즐겨찾기 설정을 했을 시
-                medicineResponse.setFavoritesTrue();
+                medicineResponse.setFavoritesIdx(favorites.get().getFavoritesIdx());
             }
         }
         return ApiResponse.success(medicineResponse);

@@ -15,5 +15,5 @@ public class PrescriptionResponse {
     private String efficacy;        // 효능효과
     private String dosage;          // 용법용량
 
-    private boolean isFavorites;
+    private Long favoritesIdx;
 }

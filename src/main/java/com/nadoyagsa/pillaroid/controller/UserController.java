@@ -74,17 +74,15 @@ public class UserController {
     // 즐겨찾기 추가
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/favorites")
-    public ApiResponse postUserFavorites(HttpServletRequest request, @RequestBody FavoritesDTO favoritesDTO) throws IllegalStateException {
+    public ApiResponse<FavoritesResponse> postUserFavorites(HttpServletRequest request, @RequestBody FavoritesDTO favoritesDTO) throws IllegalStateException {
         Optional<User> user = findUserByToken(request);
 
         if (user.isPresent()) {
             favoritesDTO.setUserIdx(user.get().getUserIdx());
 
-            boolean isSaved = favoritesService.saveFavorites(favoritesDTO.toFavoritesEntity());
-            if (isSaved)
-                return ApiResponse.SUCCESS;
-            else
-                throw InternalServerException.INTERNAL_ERROR;
+            FavoritesResponse savedFavoritesResponse = favoritesService.saveFavorites(favoritesDTO.toFavoritesEntity());
+            return ApiResponse.success(savedFavoritesResponse);
+            // 저장 안되면 Service에서 Internal_Error로 throw 함
         }
         else
             throw UnauthorizedException.UNAUTHORIZED_USER;

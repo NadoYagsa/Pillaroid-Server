@@ -57,10 +57,10 @@ public class FavoritesService {
     }
 
     // 즐겨찾기 추가
-    public boolean saveFavorites(Favorites favorites) {
+    public FavoritesResponse saveFavorites(Favorites favorites) {
         try {
-            favoritesRepository.save(favorites);
-            return true;
+            Favorites saved = favoritesRepository.save(favorites);
+            return saved.toFavoritesResponse();
         } catch (Exception e) {
             throw InternalServerException.INTERNAL_ERROR;
         }

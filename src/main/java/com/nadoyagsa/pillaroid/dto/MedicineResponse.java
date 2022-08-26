@@ -1,15 +1,8 @@
 package com.nadoyagsa.pillaroid.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nadoyagsa.pillaroid.entity.Appearance;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
-@ToString
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -24,10 +17,6 @@ public class MedicineResponse {
 	private String ingredient;      // 성분정보
 	private String save;            // 저장방법
 
-	private boolean isFavorites = false;
-
-	@JsonIgnore
-	public void setFavoritesTrue() {
-		isFavorites = true;
-	}
+	@Setter
+	private Long favoritesIdx = null;
 }
