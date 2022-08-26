@@ -34,8 +34,28 @@ public class UserController {
         this.favoritesService = favoritesService;
     }
 
-    // 사용자의 즐겨찾기 목록 조회
+    // 사용자의 의약품 번호에 해당하는 즐겨찾기 여부 조회
     @GetMapping(value = "/favorites")
+    public ApiResponse<FavoritesResponse> getUserFavorites(HttpServletRequest request, @RequestParam int medicineIdx) throws IllegalStateException {
+        Optional<User> user = findUserByToken(request);
+
+        if (user.isPresent()) {
+            Optional<Favorites> favorites = favoritesService.findFavoritesByUserAndMedicineIdx(user.get().getUserIdx(), medicineIdx);
+
+            if (favorites.isPresent()) {    // 회원의 즐겨찾기 o
+                FavoritesResponse response = favorites.get().toFavoritesResponse();
+                return ApiResponse.success(response);
+            }
+            else {                          // 회원의 즐겨찾기 x
+                throw NotFoundException.DATA_NOT_FOUND;
+            }
+        }
+        else
+            throw UnauthorizedException.UNAUTHORIZED_USER;
+    }
+
+    // 사용자의 즐겨찾기 목록 조회
+    @GetMapping(value = "/favorites/list")
     public ApiResponse<List<FavoritesResponse>> getUserFavorites(HttpServletRequest request) throws IllegalStateException {
         Optional<User> user = findUserByToken(request);
 

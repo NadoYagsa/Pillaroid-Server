@@ -28,6 +28,11 @@ public class FavoritesService {
         return favoritesRepository.findById(favoritesIdx);
     }
 
+    // 의약품 번호와 회원 번호로 즐겨찾기 조회
+    public Optional<Favorites> findFavoritesByUserAndMedicineIdx(Long userIdx, int medicineIdx) {
+        return favoritesRepository.findFavoritesByUserAndMedicine(userIdx, medicineIdx);
+    }
+
     // 회원 번호로 즐겨찾기 목록 조회
     public List<FavoritesResponse> findFavoritesListByUserIdx(Long userIdx) {
         List<Favorites> favoritesList = favoritesRepository.findAllByUser_UserIdx(userIdx);
