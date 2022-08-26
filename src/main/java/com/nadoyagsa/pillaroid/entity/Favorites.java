@@ -33,6 +33,7 @@ public class Favorites {
     public FavoritesResponse toFavoritesResponse() {
         return FavoritesResponse.builder()
                 .favoritesIdx(favoritesIdx)
+                .medicineIdx(medicine.getMedicineIdx())
                 .medicineName(medicine.getName())
                 .build();
     }
