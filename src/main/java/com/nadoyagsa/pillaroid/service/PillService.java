@@ -7,8 +7,6 @@ import com.nadoyagsa.pillaroid.dto.PillModelResponse;
 import com.nadoyagsa.pillaroid.dto.PillResponse;
 import com.nadoyagsa.pillaroid.entity.Medicine;
 import com.nadoyagsa.pillaroid.repository.MedicineRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
@@ -30,7 +28,6 @@ import java.util.Optional;
 @Service
 public class PillService {
     private final MedicineRepository medicineRepository;
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public PillService(MedicineRepository medicineRepository) {
@@ -61,7 +58,6 @@ public class PillService {
         body.add("image", pillImageByteArray);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-        logger.info("1");
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response;
         try {

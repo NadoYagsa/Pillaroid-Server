@@ -15,13 +15,16 @@ public enum ErrorCode {
 	BAD_PARAMETER_TYPE(40002, BAD_REQUEST, "지원하지 않는 파라미터 형식입니다."),
 	NOT_SUPPORTED_BARCODE_FORMAT(40003, BAD_REQUEST, "지원하지 않는 바코드 형식입니다."),
 
+	/* 401 UNAUTHORIZED: 인증 자격 없음 */
+	UNAUTHORIZED_USER(401, UNAUTHORIZED, "인증된 사용자가 아닙니다."),
+
 	/* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
 	DATA_NOT_FOUND(40403, NOT_FOUND, "해당 정보가 없습니다."),
 	BARCODE_NOT_FOUND(40401, NOT_FOUND, "해당 바코드에 대한 정보가 없습니다."),
 	MEDICINE_NOT_FOUND(40402, NOT_FOUND, "조건에 맞는 의약품이 존재하지 않습니다."),
 
 	/* 500 INTERNAL_SERVER_ERROR : 서버 오류 */
-	INTERNAL_ERROR(50001, INTERNAL_SERVER_ERROR, "서버 내부 오류로 인해 응답을 제공할 수 없습니다.");
+	INTERNAL_ERROR(500, INTERNAL_SERVER_ERROR, "서버 내부 오류로 인해 응답을 제공할 수 없습니다.");
 
 	private final long errorIdx;	//에러 식별코드
 	private final HttpStatus errorStatus;

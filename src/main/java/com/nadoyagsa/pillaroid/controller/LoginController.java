@@ -65,22 +65,22 @@ public class LoginController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);    // Status Code=500
         }
 
-        String authToken = authTokenProvider.createAuthToken(kakaoUserId);
         Optional<User> user = userService.findUserByKakaoAccountId(kakaoUserId);
         // 클라이언트의 로그인 경험 있음
         if (user.isPresent()) {
+            String authToken = authTokenProvider.createAuthToken(user.get().getUserIdx());
+
             response.put("success", true);
             response.put("authToken", authToken);
-            //response.put("user", user);
             return new ResponseEntity<>(response, HttpStatus.OK);                       // Status Code=200
         }
         // 클라이언트의 로그인 경험 없음(DB에 사용자 추가)
         else {
             User newUser = userService.signUp(new User(kakaoUserId));
+            String authToken = authTokenProvider.createAuthToken(newUser.getUserIdx());
 
             response.put("success", true);
             response.put("authToken", authToken);
-            //response.put("user", newUser);
             return new ResponseEntity<>(response, HttpStatus.CREATED);                  // Status Code=201
         }
     }

@@ -14,4 +14,6 @@ public class PrescriptionResponse {
     private Appearance appearance;  // 외형정보
     private String efficacy;        // 효능효과
     private String dosage;          // 용법용량
+
+    private Long favoritesIdx;
 }

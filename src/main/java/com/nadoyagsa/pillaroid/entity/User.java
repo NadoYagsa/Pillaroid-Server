@@ -1,17 +1,16 @@
 package com.nadoyagsa.pillaroid.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "user")
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
-@Setter
+@Builder
 public class User {
     @Id
     @Column(name = "user_idx")
@@ -24,13 +23,5 @@ public class User {
 
     public User(Long kakaoAccountId) {
         this.kakaoAccountId = kakaoAccountId;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "userIdx=" + userIdx +
-                ", kakaoAccountId=" + kakaoAccountId +
-                '}';
     }
 }

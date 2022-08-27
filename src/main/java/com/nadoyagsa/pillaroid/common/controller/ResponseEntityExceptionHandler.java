@@ -2,6 +2,7 @@ package com.nadoyagsa.pillaroid.common.controller;
 
 import java.io.IOException;
 
+import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -29,6 +30,13 @@ public class ResponseEntityExceptionHandler {
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)
 	@ExceptionHandler(value = {NotFoundException.class})
 	protected ApiResponse notFoundError(NotFoundException ex) {
+		log.info(ex.getErrorCode().getDetail());
+		return ApiResponse.error(ex.getErrorCode());
+	}
+
+	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+	@ExceptionHandler(value = {InternalServerException.class})
+	protected ApiResponse IOError(InternalServerException ex) {
 		log.info(ex.getErrorCode().getDetail());
 		return ApiResponse.error(ex.getErrorCode());
 	}

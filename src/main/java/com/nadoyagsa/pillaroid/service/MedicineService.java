@@ -12,7 +12,9 @@ import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
+import com.nadoyagsa.pillaroid.entity.Favorites;
 import com.nadoyagsa.pillaroid.entity.Medicine;
+import com.nadoyagsa.pillaroid.repository.FavoritesRepository;
 import com.nadoyagsa.pillaroid.repository.MedicineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,13 +22,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class MedicineService {
     private final MedicineRepository medicineRepository;
-
     private final MedicineExcelUtils medicineExcelUtils;
+    private final FavoritesRepository favoritesRepository;
 
     @Autowired
-    public MedicineService(MedicineRepository medicineRepository, MedicineExcelUtils medicineExcelUtils) {
+    public MedicineService(MedicineRepository medicineRepository, MedicineExcelUtils medicineExcelUtils, FavoritesRepository favoritesRepository) {
         this.medicineRepository = medicineRepository;
         this.medicineExcelUtils = medicineExcelUtils;
+        this.favoritesRepository = favoritesRepository;
     }
 
     public Optional<MedicineResponse> getMedicineInfoByIdx(int idx) {
@@ -83,11 +86,11 @@ public class MedicineService {
         for (String name : nameList) {
             List<Medicine> medicineList = medicineRepository.findMedicinesByStartingName(name);
 
-            // DB에 저장된 제품명에서 괄호를 제거하고 동일한 의약품명이 있다면 해당 의약품 정보 전달 else 가장 먼저 조회된 결과 전달
+            // DB에 저장된 제품명에서 괄호를 제거하고 동일한 의약품명이 있다면 해당 의약품 정보 전달 (else 가장 먼저 조회된 결과 전달)
             boolean isAdded = false;
             for (Medicine medicine : medicineList) {
                 if (medicine.getName().strip().equals(name)) {
-                    prescriptionList.add(medicine.toPrescriptionResponse());
+                    prescriptionList.add(medicine.toPrescriptionResponse(null));
 
                     isAdded = true;
                     break;
@@ -95,9 +98,49 @@ public class MedicineService {
             }
 
             if (!isAdded)
-                prescriptionList.add(medicineList.get(0).toPrescriptionResponse());
+                prescriptionList.add(medicineList.get(0).toPrescriptionResponse(null));
         }
         return prescriptionList;
+    }
+
+    public List<PrescriptionResponse> getMedicineListByNameList(String[] nameList, Long userIdx) {
+        List<PrescriptionResponse> prescriptionList = new ArrayList<>();
+        for (String name : nameList) {
+            List<Medicine> medicineList = medicineRepository.findMedicinesByStartingName(name);
+
+            // DB에 저장된 제품명에서 괄호를 제거하고 동일한 의약품명이 있다면 해당 의약품 정보 전달 (else 가장 먼저 조회된 결과 전달)
+            boolean isAdded = false;
+            for (Medicine medicine : medicineList) {
+                if (medicine.getName().strip().equals(name)) {
+                    Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, medicine.getMedicineIdx());
+
+                    if (favorites.isPresent())
+                        prescriptionList.add(medicine.toPrescriptionResponse(favorites.get().getFavoritesIdx()));
+                    else
+                        prescriptionList.add(medicine.toPrescriptionResponse(null));
+
+                    isAdded = true;
+                    break;
+                }
+            }
+
+            if (!isAdded) {
+                Medicine firstMedicine = medicineList.get(0);
+                Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, firstMedicine.getMedicineIdx());
+
+                if (favorites.isPresent())
+                    prescriptionList.add(firstMedicine.toPrescriptionResponse(favorites.get().getFavoritesIdx()));
+                else
+                    prescriptionList.add(firstMedicine.toPrescriptionResponse(null));
+            }
+        }
+        return prescriptionList;
+    }
+
+
+    // 의약품 번호와 회원 번호로 즐겨찾기 조회
+    public Optional<Favorites> findFavoritesByUserAndMedicineIdx(Long userIdx, int medicineIdx) {
+        return favoritesRepository.findFavoritesByUserAndMedicine(userIdx, medicineIdx);
     }
 
     public boolean updateMedicineInfoInExcel() {
