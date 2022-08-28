@@ -55,20 +55,10 @@ public class MedicineController {
             throw NotFoundException.MEDICINE_NOT_FOUND;
     }
 
-    // 의약품 용기(제품명, 바코드)로 정보 조회
+    // 의약품 용기(바코드)로 정보 조회
     @GetMapping("/case")
-    public ApiResponse<MedicineResponse> getMedicineInfo(HttpServletRequest request,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String barcode) throws IOException {
-        if (name != null && !name.equals("")) {     // 제품명
-            Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByCaseName(name);
-
-            if (medicineResponse.isPresent()) {
-                return reflectFavoritesAboutMedicine(request, medicineResponse.get());
-            }
-            else
-                throw NotFoundException.MEDICINE_NOT_FOUND;
-        } else if (barcode != null && !barcode.equals("")) {        // 바코드
+    public ApiResponse<MedicineResponse> getMedicineInfo(HttpServletRequest request, @RequestParam String barcode) throws IOException {
+        if (barcode != null && !barcode.equals("")) {        // 바코드
             Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByStandardCode(barcode);
 
             if (medicineResponse.isPresent()) {
@@ -81,12 +71,14 @@ public class MedicineController {
                 if (medicineResponse.isPresent()) {
                     return reflectFavoritesAboutMedicine(request, medicineResponse.get());
                 }
-                else
+                else {
                     throw NotFoundException.BARCODE_NOT_FOUND;
+                }
             }
         }
-        else 
+        else {
             throw BadRequestException.BAD_PARAMETER;
+        }
     }
 
     // 음성을 통한 의약품명으로 의약품 리스트 조회
@@ -138,6 +130,7 @@ public class MedicineController {
                 medicineResponse.setFavoritesIdx(favorites.get().getFavoritesIdx());
             }
         }
+        System.out.println("medicineResponse = " + medicineResponse);
         return ApiResponse.success(medicineResponse);
     }
 }

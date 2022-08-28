@@ -48,21 +48,6 @@ public class MedicineService {
             return Optional.ofNullable(medicine.get().toMedicineResponse());
     }
 
-    public Optional<MedicineResponse> getMedicineInfoByCaseName(String name) {
-        List<Medicine> medicineList = medicineRepository.findMedicinesByStartingName(name);
-
-        // DB에 저장된 제품명에서 괄호를 제거하고 동일한 의약품명이 있다면 해당 의약품 정보 전달 else 가장 먼저 조회된 결과 전달
-        for (Medicine medicine : medicineList) {
-            if (medicine.getName().strip().equals(name))
-                return Optional.ofNullable(medicine.toMedicineResponse());
-        }
-
-        if (medicineList.size() == 0)
-            return Optional.empty();
-        else
-            return Optional.ofNullable(medicineList.get(0).toMedicineResponse());
-    }
-
     public Optional<MedicineResponse> getMedicineInfoByStandardCode(String barcode) {
         Optional<Medicine> medicine = medicineRepository.findMedicineByStandardCode(barcode);
         if (medicine.isEmpty())
