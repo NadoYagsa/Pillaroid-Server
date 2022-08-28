@@ -5,11 +5,15 @@ import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
 import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
 import com.nadoyagsa.pillaroid.common.exception.UnauthorizedException;
+import com.nadoyagsa.pillaroid.dto.AlarmTimeDto;
+import com.nadoyagsa.pillaroid.dto.AlarmTimeResponse;
 import com.nadoyagsa.pillaroid.dto.FavoritesDTO;
 import com.nadoyagsa.pillaroid.dto.FavoritesResponse;
+import com.nadoyagsa.pillaroid.entity.AlarmTime;
 import com.nadoyagsa.pillaroid.entity.Favorites;
 import com.nadoyagsa.pillaroid.entity.User;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
+import com.nadoyagsa.pillaroid.service.AlarmTimeService;
 import com.nadoyagsa.pillaroid.service.FavoritesService;
 import com.nadoyagsa.pillaroid.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -26,12 +32,15 @@ public class UserController {
     private final AuthTokenProvider authTokenProvider;
     private final UserService userService;
     private final FavoritesService favoritesService;
+    private final AlarmTimeService alarmTimeService;
 
     @Autowired
-    public UserController(AuthTokenProvider authTokenProvider, UserService userService, FavoritesService favoritesService) {
+    public UserController(AuthTokenProvider authTokenProvider, UserService userService,
+            FavoritesService favoritesService, AlarmTimeService alarmTimeService) {
         this.authTokenProvider = authTokenProvider;
         this.userService = userService;
         this.favoritesService = favoritesService;
+        this.alarmTimeService = alarmTimeService;
     }
 
     // 사용자의 의약품 번호에 해당하는 즐겨찾기 여부 조회
@@ -90,7 +99,7 @@ public class UserController {
 
     // 즐겨찾기 삭제
     @DeleteMapping(value = "/favorites/{fid}")
-    public ApiResponse deleteUserFavorites(HttpServletRequest request, @PathVariable("fid") Long favoritesIdx) throws IllegalStateException {
+    public ApiResponse<String> deleteUserFavorites(HttpServletRequest request, @PathVariable("fid") Long favoritesIdx) throws IllegalStateException {
         Optional<Favorites> favorites = favoritesService.findFavoritesByIdx(favoritesIdx);
 
         if (favorites.isPresent()) {
@@ -128,6 +137,33 @@ public class UserController {
         }
         else
             throw UnauthorizedException.UNAUTHORIZED_USER;
+    }
+
+    // 사용자의 복용 시간대 조회
+    @GetMapping("/alarmtime")
+    public ApiResponse<AlarmTimeResponse> getUserAlarmTime(HttpServletRequest request) {
+        User user = findUserByToken(request).orElseThrow(
+                () -> UnauthorizedException.UNAUTHORIZED_USER
+        );
+
+        Optional<AlarmTime> optAlarmTime = alarmTimeService.findAlarmTimeByUserIdx(user.getUserIdx());
+        AlarmTime alarmTime = optAlarmTime.orElseThrow(
+                () -> NotFoundException.DATA_NOT_FOUND
+        );
+
+        return ApiResponse.success(alarmTime.toAlarmTimeResponse());
+    }
+
+    // 사용자의 복용 시간대 추가 및 수정
+    @PostMapping("/alarmtime")
+    public ApiResponse<AlarmTimeResponse> saveUserAlarmTime(HttpServletRequest request, @RequestBody @Valid AlarmTimeDto alarmTimeDto) {
+        User user = findUserByToken(request).orElseThrow(
+                () -> UnauthorizedException.UNAUTHORIZED_USER
+        );
+
+        AlarmTime alarmTime = alarmTimeService.saveAlarmTime(user, alarmTimeDto);
+
+        return ApiResponse.success(alarmTime.toAlarmTimeResponse());
     }
 
     // 사용자 jwt 토큰으로부터 회원 정보 조회
