@@ -1,9 +1,12 @@
 package com.nadoyagsa.pillaroid.common.controller;
 
 import java.io.IOException;
+import java.time.format.DateTimeParseException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,5 +56,21 @@ public class ResponseEntityExceptionHandler {
 	protected ApiResponse methodArgumentTypeMismatchError(MethodArgumentTypeMismatchException ex) {
 		log.error(ex.getMessage());
 		return ApiResponse.error(ErrorCode.BAD_PARAMETER_TYPE);
+	}
+
+	// 유효성 검사 실패 시
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = {MethodArgumentNotValidException.class})
+	protected ApiResponse methodArgumetNotValidException(MethodArgumentNotValidException ex) {
+		log.error(ex.getMessage());
+		return ApiResponse.error(ErrorCode.BAD_PARAMETER, ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+	}
+
+	// JSON 직렬화, 역직렬화 실패 (ex. 타입 변환 실패)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = {JsonProcessingException.class})
+	protected ApiResponse jsonProcessingException(JsonProcessingException ex) {
+		log.error(ex.getMessage());
+		return ApiResponse.error(ErrorCode.BAD_PARAMETER);
 	}
 }

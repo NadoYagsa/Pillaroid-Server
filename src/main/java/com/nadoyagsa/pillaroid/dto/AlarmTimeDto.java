@@ -13,11 +13,11 @@ import lombok.Getter;
 @Getter
 @Builder
 public class AlarmTimeDto {
-	@NotNull
+	@NotNull(message = "morning 필수")
 	private LocalTime morning;
-	@NotNull
+	@NotNull(message = "lunch 필수")
 	private LocalTime lunch;
-	@NotNull
+	@NotNull(message = "dinner 필수")
 	private LocalTime dinner;
 
 	public AlarmTime toEntity(User user) {

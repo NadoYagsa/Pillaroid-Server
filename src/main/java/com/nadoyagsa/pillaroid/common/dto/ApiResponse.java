@@ -30,4 +30,10 @@ public class ApiResponse<T> {	//TODO: 추후, 구체적인 오류사항이 담�
 	public static <T> ApiResponse<T> error(ErrorCode errorCode) {
 		return new ApiResponse<>(errorCode.getErrorIdx(), errorCode.getErrorStatus(), errorCode.getDetail(), null);
 	}
+
+	// 상세 오류 메시지를 포함
+	public static <T> ApiResponse<T> error(ErrorCode errorCode, String causeMessage) {
+		String message = String.format("%s(%s)", errorCode.getDetail(), causeMessage);
+		return new ApiResponse<>(errorCode.getErrorIdx(), errorCode.getErrorStatus(), message, null);
+	}
 }
