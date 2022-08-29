@@ -18,6 +18,9 @@ public enum ErrorCode {
 	/* 401 UNAUTHORIZED: 인증 자격 없음 */
 	UNAUTHORIZED_USER(401, UNAUTHORIZED, "인증된 사용자가 아닙니다."),
 
+	/* 403 FORBIDDEN: 권한 없음 */
+	DELETE_FORBIDDEN(40301, FORBIDDEN, "삭제할 권한이 없습니다."),
+
 	/* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
 	DATA_NOT_FOUND(40403, NOT_FOUND, "해당 정보가 없습니다."),
 	BARCODE_NOT_FOUND(40401, NOT_FOUND, "해당 바코드에 대한 정보가 없습니다."),

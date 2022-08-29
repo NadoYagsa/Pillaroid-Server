@@ -8,6 +8,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.nadoyagsa.pillaroid.common.exception.UnauthorizedException;
+
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
     private final AuthTokenProvider authTokenProvider;
@@ -18,13 +20,12 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String token = request.getHeader("authorization");
         if (token != null && authTokenProvider.validateToken(token)) {
             return true;
         } else {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            return false;
+            throw UnauthorizedException.UNAUTHORIZED_USER;
         }
     }
 }
