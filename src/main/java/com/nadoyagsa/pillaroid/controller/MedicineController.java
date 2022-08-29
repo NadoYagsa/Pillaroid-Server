@@ -8,14 +8,15 @@ import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
 import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
-import com.nadoyagsa.pillaroid.component.MedicineExcelUtils;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import com.nadoyagsa.pillaroid.entity.Favorites;
+import com.nadoyagsa.pillaroid.entity.Notification;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
 import com.nadoyagsa.pillaroid.service.BarcodeService;
 import com.nadoyagsa.pillaroid.service.MedicineService;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 public class MedicineController {
     private final MedicineService medicineService;
     private final BarcodeService barcodeService;
-    private final MedicineExcelUtils medicineExcelUtils;
 
     private final AuthTokenProvider authTokenProvider;
 
@@ -41,15 +41,7 @@ public class MedicineController {
         Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByIdx(idx);
 
         if (medicineResponse.isPresent()) {
-            if (request.getHeader("authorization") != null) {       // 로그인 된 사용자라면 즐겨찾기 여부를 보여줌
-                Long userIdx = findUserIdxByToken(request);
-                Optional<Favorites> favorites = medicineService.findFavoritesByUserAndMedicineIdx(userIdx, idx);
-
-                if (favorites.isPresent()) {    // 즐겨찾기 설정을 했을 시
-                    medicineResponse.get().setFavoritesIdx(favorites.get().getFavoritesIdx());
-                }
-            }
-            return ApiResponse.success(medicineResponse.get());
+            return reflectFavoritesAndNotificationAboutMedicine(request, medicineResponse.get());
         }
         else
             throw NotFoundException.MEDICINE_NOT_FOUND;
@@ -62,14 +54,14 @@ public class MedicineController {
             Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByStandardCode(barcode);
 
             if (medicineResponse.isPresent()) {
-                return reflectFavoritesAboutMedicine(request, medicineResponse.get());
+                return reflectFavoritesAndNotificationAboutMedicine(request, medicineResponse.get());
             }
             else {
                 String serialNumber = barcodeService.crawlSerialNumber(barcode);  // 바코드 번호로 품목일련번호 크롤링
                 medicineResponse = medicineService.getMedicineInfoBySerialNumber(Integer.parseInt(serialNumber));
 
                 if (medicineResponse.isPresent()) {
-                    return reflectFavoritesAboutMedicine(request, medicineResponse.get());
+                    return reflectFavoritesAndNotificationAboutMedicine(request, medicineResponse.get());
                 }
                 else {
                     throw NotFoundException.BARCODE_NOT_FOUND;
@@ -121,13 +113,18 @@ public class MedicineController {
         }
     }
 
-    private ApiResponse<MedicineResponse> reflectFavoritesAboutMedicine(HttpServletRequest request, MedicineResponse medicineResponse) {
+    private ApiResponse<MedicineResponse> reflectFavoritesAndNotificationAboutMedicine(HttpServletRequest request, MedicineResponse medicineResponse) {
         if (request.getHeader("authorization") != null) {       // 로그인 된 사용자라면 즐겨찾기 여부를 보여줌
             Long userIdx = findUserIdxByToken(request);
-            Optional<Favorites> favorites = medicineService.findFavoritesByUserAndMedicineIdx(userIdx, medicineResponse.getMedicineIdx());
 
+            Optional<Favorites> favorites = medicineService.findFavoritesByUserAndMedicineIdx(userIdx, medicineResponse.getMedicineIdx());
             if (favorites.isPresent()) {    // 즐겨찾기 설정을 했을 시
                 medicineResponse.setFavoritesIdx(favorites.get().getFavoritesIdx());
+            }
+
+            Optional<Notification> notification = medicineService.findNotificationByUserAndMedicineIdx(userIdx, medicineResponse.getMedicineIdx());
+            if (notification.isPresent()) { // 알림 설정을 했을 시
+                medicineResponse.setNotificationResponse(notification.get().toNotificationResponse());
             }
         }
         return ApiResponse.success(medicineResponse);
