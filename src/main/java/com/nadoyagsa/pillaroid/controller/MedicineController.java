@@ -130,7 +130,6 @@ public class MedicineController {
                 medicineResponse.setFavoritesIdx(favorites.get().getFavoritesIdx());
             }
         }
-        System.out.println("medicineResponse = " + medicineResponse);
         return ApiResponse.success(medicineResponse);
     }
 }
