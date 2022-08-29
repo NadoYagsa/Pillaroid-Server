@@ -9,7 +9,6 @@ import com.nadoyagsa.pillaroid.dto.AlarmTimeDto;
 import com.nadoyagsa.pillaroid.dto.AlarmTimeResponse;
 import com.nadoyagsa.pillaroid.dto.FavoritesDTO;
 import com.nadoyagsa.pillaroid.dto.FavoritesResponse;
-import com.nadoyagsa.pillaroid.entity.AlarmTime;
 import com.nadoyagsa.pillaroid.entity.Favorites;
 import com.nadoyagsa.pillaroid.entity.User;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
@@ -43,6 +42,7 @@ public class UserController {
         this.alarmTimeService = alarmTimeService;
     }
 
+    /* 즐겨찾기 */
     // 사용자의 의약품 번호에 해당하는 즐겨찾기 여부 조회
     @GetMapping(value = "/favorites")
     public ApiResponse<FavoritesResponse> getUserFavorites(HttpServletRequest request, @RequestParam int medicineIdx) throws IllegalStateException {
@@ -139,31 +139,25 @@ public class UserController {
             throw UnauthorizedException.UNAUTHORIZED_USER;
     }
 
+    /* 복용 시간대 */
     // 사용자의 복용 시간대 조회
     @GetMapping("/alarmtime")
     public ApiResponse<AlarmTimeResponse> getUserAlarmTime(HttpServletRequest request) {
-        User user = findUserByToken(request).orElseThrow(
-                () -> UnauthorizedException.UNAUTHORIZED_USER
-        );
+        User user = findUserByToken(request)
+                .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        Optional<AlarmTime> optAlarmTime = alarmTimeService.findAlarmTimeByUserIdx(user.getUserIdx());
-        AlarmTime alarmTime = optAlarmTime.orElseThrow(
-                () -> NotFoundException.DATA_NOT_FOUND
-        );
-
-        return ApiResponse.success(alarmTime.toAlarmTimeResponse());
+        AlarmTimeResponse alarmTime = alarmTimeService.findAlarmTimeByUser(user);
+        return ApiResponse.success(alarmTime);
     }
 
     // 사용자의 복용 시간대 추가 및 수정
     @PostMapping("/alarmtime")
     public ApiResponse<AlarmTimeResponse> saveUserAlarmTime(HttpServletRequest request, @RequestBody @Valid AlarmTimeDto alarmTimeDto) {
-        User user = findUserByToken(request).orElseThrow(
-                () -> UnauthorizedException.UNAUTHORIZED_USER
-        );
+        User user = findUserByToken(request)
+                .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        AlarmTime alarmTime = alarmTimeService.saveAlarmTime(user, alarmTimeDto);
-
-        return ApiResponse.success(alarmTime.toAlarmTimeResponse());
+        AlarmTimeResponse alarmTime = alarmTimeService.saveAlarmTime(user, alarmTimeDto);
+        return ApiResponse.success(alarmTime);
     }
 
     // 사용자 jwt 토큰으로부터 회원 정보 조회
