@@ -8,7 +8,9 @@ import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
 import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
+import com.nadoyagsa.pillaroid.dto.FavoritesAndNotificationResponse;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
+import com.nadoyagsa.pillaroid.dto.NotificationResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import com.nadoyagsa.pillaroid.entity.Favorites;
@@ -18,6 +20,7 @@ import com.nadoyagsa.pillaroid.service.BarcodeService;
 import com.nadoyagsa.pillaroid.service.MedicineService;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -102,6 +105,25 @@ public class MedicineController {
         }
         else
             throw BadRequestException.BAD_PARAMETER;
+    }
+
+    // 의약품에 대한 사용자 즐겨찾기, 알림 조회
+    @GetMapping("/{id}/user-info")
+    public ApiResponse<FavoritesAndNotificationResponse> getFavoritesAndNotification(HttpServletRequest request, @PathVariable("id") int medicineIdx) {
+        Long userIdx = findUserIdxByToken(request);
+
+        Optional<Favorites> favorites = medicineService.findFavoritesByUserAndMedicineIdx(userIdx, medicineIdx);
+        Optional<Notification> notification = medicineService.findNotificationByUserAndMedicineIdx(userIdx, medicineIdx);
+
+        // Optional에 값이 없으면 null로 저장
+        Long favoritesIdx = favorites.map(Favorites::getFavoritesIdx).orElse(null);
+        NotificationResponse notificationResponse = notification.map(Notification::toNotificationResponse).orElse(null);
+
+        FavoritesAndNotificationResponse favoritesAndNotification = FavoritesAndNotificationResponse.builder()
+                .favoritesIdx(favoritesIdx)
+                .notificationResponse(notificationResponse)
+                .build();
+        return ApiResponse.success(favoritesAndNotification);
     }
 
     // 사용자 jwt 토큰으로부터 회원 정보 조회
