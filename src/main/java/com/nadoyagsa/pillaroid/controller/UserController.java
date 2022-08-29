@@ -2,6 +2,7 @@ package com.nadoyagsa.pillaroid.controller;
 
 import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
+import com.nadoyagsa.pillaroid.common.exception.ForbiddenException;
 import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
 import com.nadoyagsa.pillaroid.common.exception.UnauthorizedException;
@@ -9,11 +10,15 @@ import com.nadoyagsa.pillaroid.dto.AlarmTimeDto;
 import com.nadoyagsa.pillaroid.dto.AlarmTimeResponse;
 import com.nadoyagsa.pillaroid.dto.FavoritesDTO;
 import com.nadoyagsa.pillaroid.dto.FavoritesResponse;
+import com.nadoyagsa.pillaroid.dto.NotificationDto;
+import com.nadoyagsa.pillaroid.dto.NotificationResponse;
+import com.nadoyagsa.pillaroid.dto.NotificationTimeResponse;
 import com.nadoyagsa.pillaroid.entity.Favorites;
 import com.nadoyagsa.pillaroid.entity.User;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
 import com.nadoyagsa.pillaroid.service.AlarmTimeService;
 import com.nadoyagsa.pillaroid.service.FavoritesService;
+import com.nadoyagsa.pillaroid.service.NotificationService;
 import com.nadoyagsa.pillaroid.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,14 +37,17 @@ public class UserController {
     private final UserService userService;
     private final FavoritesService favoritesService;
     private final AlarmTimeService alarmTimeService;
+    private final NotificationService notificationService;
 
     @Autowired
     public UserController(AuthTokenProvider authTokenProvider, UserService userService,
-            FavoritesService favoritesService, AlarmTimeService alarmTimeService) {
+            FavoritesService favoritesService, AlarmTimeService alarmTimeService,
+            NotificationService notificationService) {
         this.authTokenProvider = authTokenProvider;
         this.userService = userService;
         this.favoritesService = favoritesService;
         this.alarmTimeService = alarmTimeService;
+        this.notificationService = notificationService;
     }
 
     /* 즐겨찾기 */
@@ -158,6 +166,37 @@ public class UserController {
 
         AlarmTimeResponse alarmTime = alarmTimeService.saveAlarmTime(user, alarmTimeDto);
         return ApiResponse.success(alarmTime);
+    }
+
+    /* 알림 */
+    // 의약품에 대한 사용자 알림 조회
+    @GetMapping("/notifications/{mid}")
+    public ApiResponse<NotificationResponse> getUserNotification(HttpServletRequest request, @PathVariable("mid") int medicineIdx) {
+        User user = findUserByToken(request)
+                .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
+
+        NotificationResponse notification = notificationService.findNotificationByUserAndMedicineIdx(user, medicineIdx);
+        return ApiResponse.success(notification);
+    }
+
+    // 사용자의 의약품 알림 목록 조회
+    @GetMapping("/notifications/list")
+    public ApiResponse<List<NotificationResponse>> getUserNotificationList(HttpServletRequest request) {
+        User user = findUserByToken(request)
+                .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
+
+        List<NotificationResponse> notifications = notificationService.findNotificationByUser(user);
+        return ApiResponse.success(notifications);
+    }
+
+    // 의약품에 대한 사용자 알림 삭제
+    @DeleteMapping("/notifications/{nid}")
+    public ApiResponse<NotificationTimeResponse> deleteUserNotification(HttpServletRequest request, @PathVariable("nid")  long notificationIdx) throws ForbiddenException {
+        User user = findUserByToken(request)
+                .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
+
+        NotificationTimeResponse notificationAndTime = notificationService.deleteNotification(user, notificationIdx);  // 알림 데이터 삭제
+        return ApiResponse.success(notificationAndTime);
     }
 
     // 사용자 jwt 토큰으로부터 회원 정보 조회
