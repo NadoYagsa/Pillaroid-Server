@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -62,7 +64,7 @@ public class AlarmService {
 		Medicine medicine = medicineRepository.findById(alarmDto.getMedicineIdx())
 				.orElseThrow(() -> BadRequestException.BAD_PARAMETER);
 
-		Map<String, String> dosageSummary = parseDosage(medicine.getDosage());	// TODO: 메소드 구현
+		Map<String, String> dosageSummary = parseDosage(medicine.getDosage());
 		Integer[] threeTakingTime = getThreeTakingTime(dosageSummary.get("number"), dosageSummary.get("when"));	// TODO: 메소드 구현
 
 		// 알림 저장
@@ -83,19 +85,74 @@ public class AlarmService {
 
 	// 용법용량에서 복용횟수, 복용량, 복용시기 파싱
 	private Map<String, String> parseDosage(String dosage) {
-		// TODO: 복용횟수, 복용량, 복용시기 파싱
-		Map<String,String> map = new HashMap<>();
+		String number = "";
+		String amount = "";
+		String when = "";
 
-		map.put("number", "");	// 복용횟수 ex) 1일 1회
-		map.put("amount", "");	// 복용량 ex) 1회 2정
-		map.put("when", "");	// 복용시긴 ex) 식전 30분
+		Pattern patternNumber = Pattern.compile("(1일)\\s*([0-9]\\s?([~\\-])?\\s?[0-9]?([회번]))");	// 복용횟수 찾기
+		Matcher matcherNumber = patternNumber.matcher(dosage);
+		if (matcherNumber.find()) {
+			number = matcherNumber.group().strip();
+		}
+
+		Pattern patternAmount = Pattern.compile("([0-9]+\\s?([~\\-])?\\s?[0-9]?(정|개|캡슐|캅셀|병|포|팩|환))");	// 복용량 찾기
+		Matcher matcherAmount = patternAmount.matcher(dosage);
+		if (matcherAmount.find()) {
+			amount = matcherAmount.group().strip();
+		}
+
+		Pattern patternWhen = Pattern.compile("((식사\\s?전)|(식사\\s?후)|식전|식후|식간)\\s*(([1-6]{1}[0-9]{1})\\s?([~\\-])?\\s?([1-6]{1}[0-9]{1})?분)?([1-7](시간))?");	// 복용량 찾기
+		Matcher matcherWhen = patternWhen.matcher(dosage);
+		if (matcherWhen.find()) {
+			when = matcherWhen.group().strip();
+
+			when = when.replaceFirst("식사\\s?", "식");
+		}
+
+		Map<String, String> map = new HashMap<>();
+		map.put("number", number);	// 복용횟수 ex) 1일 1회, 1일 1번
+		map.put("amount", amount);	// 복용량   ex) 1회 2정,
+		map.put("when", when);		// 복용시긴 ex) 식전 30분
 		return map;
 	}
 
 	// 상대복용시간 계산
 	private Integer[] getThreeTakingTime(String number, String when) {
-		// TODO: 복용횟수와 복용시기를 통해 상대복용시간 계산
 		Integer[] threeTakingTime = new Integer[3];	// 아침,점심,저녁식사 기준 상대복용시간 (단위:분) (ex. 1일 2회, 식전 30분: [-30,null,-30])
+
+		// 1회는 아침
+		if (number.contains("1회") || number.contains("1번")) {
+			if (when.equals("")) {
+				threeTakingTime[0] = -30;
+			}
+			else if (when.contains("식전")) {
+				if (when.strip().equals("식전"))
+					threeTakingTime[0] = -30;
+				else if (when.contains("시간")) {
+					Integer time = Integer.valueOf(when.replaceAll("식전|시간", "").strip());
+					threeTakingTime[0] = time * 60 * -1;
+				}
+				else if (when.contains("분")) {
+					Integer time = Integer.valueOf(when.replaceAll("식전|분", "").strip());
+					threeTakingTime[0] = time * -1;
+				}
+			}
+			else if (when.contains("식후")) {
+				if (when.strip().equals("식후"))
+					threeTakingTime[0] = 30;
+				else if (when.contains("시간")) {
+					Integer time = Integer.valueOf(when.replaceAll("식후|시간", "").strip());
+					threeTakingTime[0] = time * 60;
+				}
+				else if (when.contains("분")) {
+					Integer time = Integer.valueOf(when.replaceAll("식후|분", "").strip());
+					threeTakingTime[0] = time;
+				}
+			}
+			else {	// 식간
+				// TODO: 식간
+			}
+		}
 
 		return threeTakingTime;
 	}
