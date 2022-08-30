@@ -37,8 +37,7 @@ public class PillService {
     public Optional<PillResponse> getMedicineInfoByPillImage(MultipartFile pillImage) throws IOException {
         // 플라스크 서버로 이미지 전달 후 알약 조회
         URI uri = UriComponentsBuilder
-                //TODO: 실험용으로 서버 주소 변경
-                .fromUriString("http://ec2-15-165-205-12.ap-northeast-2.compute.amazonaws.com:5000")
+                .fromUriString("http://43.200.242.152:5000")    // ec2 flask 서버
                 .path("/pill/predict")
                 .encode()
                 .build()
