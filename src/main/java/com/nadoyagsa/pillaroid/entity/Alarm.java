@@ -9,7 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.nadoyagsa.pillaroid.dto.NotificationResponse;
+import com.nadoyagsa.pillaroid.dto.AlarmResponse;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,13 +21,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
-@Table(name = "notification")
+@Table(name = "alarm")
 @Entity
-public class Notification {
+public class Alarm {
 	@Id
-	@Column(name = "notification_idx")
+	@Column(name = "alarm_idx")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long notificationIdx;
+	private Long alarmIdx;
 
 	@ManyToOne
 	@JoinColumn(name = "user_idx")
@@ -46,9 +46,10 @@ public class Notification {
 	@Column
 	private String dosage;
 
-	public NotificationResponse toNotificationResponse() {
-		return NotificationResponse.builder()
-				.notificationIdx(this.notificationIdx)
+	public AlarmResponse toAlarmResponse() {
+		return AlarmResponse.builder()
+				.alarmIdx(this.alarmIdx)
+				.medicineIdx(this.medicine.getMedicineIdx())
 				.name(this.name)
 				.period(this.period)
 				.dosage(this.dosage)

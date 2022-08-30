@@ -16,5 +16,5 @@ public class PrescriptionResponse {
     private String dosage;          // 용법용량
 
     private Long favoritesIdx;
-    private NotificationResponse notificationResponse;
+    private AlarmResponse alarmResponse;
 }

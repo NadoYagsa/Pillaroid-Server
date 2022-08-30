@@ -2,7 +2,7 @@ package com.nadoyagsa.pillaroid.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
-import com.nadoyagsa.pillaroid.dto.NotificationResponse;
+import com.nadoyagsa.pillaroid.dto.AlarmResponse;
 import com.nadoyagsa.pillaroid.dto.PillResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
@@ -82,7 +82,7 @@ public class Medicine {
     }
 
     @JsonIgnore
-    public PrescriptionResponse toPrescriptionResponse(Long favoritesIdx, NotificationResponse notificationResponse) {
+    public PrescriptionResponse toPrescriptionResponse(Long favoritesIdx, AlarmResponse alarmResponse) {
         return PrescriptionResponse.builder()
                 .medicineIdx(medicineIdx)
                 .name(name)
@@ -90,7 +90,7 @@ public class Medicine {
                 .efficacy(efficacy)
                 .dosage(dosage)
                 .favoritesIdx(favoritesIdx)
-                .notificationResponse(notificationResponse)
+                .alarmResponse(alarmResponse)
                 .build();
     }
 }

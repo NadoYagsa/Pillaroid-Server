@@ -21,5 +21,5 @@ public class MedicineResponse {
 	private Long favoritesIdx = null;
 
 	@Setter
-	private NotificationResponse notificationResponse = null;
+	private AlarmResponse alarmResponse = null;
 }

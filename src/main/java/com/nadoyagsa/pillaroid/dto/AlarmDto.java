@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class NotificationDto {
+public class AlarmDto {
 	private long userIdx;
 
 	@NotNull(message = "medicineIdx 필수")

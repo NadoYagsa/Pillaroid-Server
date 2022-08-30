@@ -10,15 +10,15 @@ import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
 import com.nadoyagsa.pillaroid.component.MedicineExcelUtils;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 
-import com.nadoyagsa.pillaroid.dto.NotificationResponse;
+import com.nadoyagsa.pillaroid.dto.AlarmResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import com.nadoyagsa.pillaroid.entity.Favorites;
 import com.nadoyagsa.pillaroid.entity.Medicine;
-import com.nadoyagsa.pillaroid.entity.Notification;
+import com.nadoyagsa.pillaroid.entity.Alarm;
 import com.nadoyagsa.pillaroid.repository.FavoritesRepository;
 import com.nadoyagsa.pillaroid.repository.MedicineRepository;
-import com.nadoyagsa.pillaroid.repository.NotificationRepository;
+import com.nadoyagsa.pillaroid.repository.AlarmRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,16 +28,16 @@ public class MedicineService {
     private final MedicineRepository medicineRepository;
     private final MedicineExcelUtils medicineExcelUtils;
     private final FavoritesRepository favoritesRepository;
-    private final NotificationRepository notificationRepository;
+    private final AlarmRepository alarmRepository;
 
     @Autowired
     public MedicineService(MedicineRepository medicineRepository, MedicineExcelUtils medicineExcelUtils,
             FavoritesRepository favoritesRepository,
-            NotificationRepository notificationRepository) {
+            AlarmRepository alarmRepository) {
         this.medicineRepository = medicineRepository;
         this.medicineExcelUtils = medicineExcelUtils;
         this.favoritesRepository = favoritesRepository;
-        this.notificationRepository = notificationRepository;
+        this.alarmRepository = alarmRepository;
     }
 
     public Optional<MedicineResponse> getMedicineInfoByIdx(int idx) {
@@ -106,13 +106,13 @@ public class MedicineService {
             for (Medicine medicine : medicineList) {
                 if (medicine.getName().strip().equals(name)) {
                     Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, medicine.getMedicineIdx());
-                    Optional<Notification> notification = findNotificationByUserAndMedicineIdx(userIdx, medicine.getMedicineIdx());
+                    Optional<Alarm> alarm = findAlarmByUserAndMedicineIdx(userIdx, medicine.getMedicineIdx());
 
                     // Optional에 값이 없으면 null로 저장
                     Long favoritesIdx = favorites.map(Favorites::getFavoritesIdx).orElse(null);
-                    NotificationResponse notificationResponse = notification.map(Notification::toNotificationResponse).orElse(null);
+                    AlarmResponse alarmResponse = alarm.map(Alarm::toAlarmResponse).orElse(null);
 
-                    prescriptionList.add(medicine.toPrescriptionResponse(favoritesIdx, notificationResponse));
+                    prescriptionList.add(medicine.toPrescriptionResponse(favoritesIdx, alarmResponse));
 
                     isAdded = true;
                     break;
@@ -122,13 +122,13 @@ public class MedicineService {
             if (!isAdded) {
                 Medicine firstMedicine = medicineList.get(0);
                 Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, firstMedicine.getMedicineIdx());
-                Optional<Notification> notification = findNotificationByUserAndMedicineIdx(userIdx, firstMedicine.getMedicineIdx());
+                Optional<Alarm> alarm = findAlarmByUserAndMedicineIdx(userIdx, firstMedicine.getMedicineIdx());
 
                 // Optional에 값이 없으면 null로 저장
                 Long favoritesIdx = favorites.map(Favorites::getFavoritesIdx).orElse(null);
-                NotificationResponse notificationResponse = notification.map(Notification::toNotificationResponse).orElse(null);
+                AlarmResponse alarmResponse = alarm.map(Alarm::toAlarmResponse).orElse(null);
 
-                prescriptionList.add(firstMedicine.toPrescriptionResponse(favoritesIdx, notificationResponse));
+                prescriptionList.add(firstMedicine.toPrescriptionResponse(favoritesIdx, alarmResponse));
             }
         }
         return prescriptionList;
@@ -141,8 +141,8 @@ public class MedicineService {
     }
 
     // 의약품에 해당하는 사용자 알림 조회
-    public Optional<Notification> findNotificationByUserAndMedicineIdx(Long userIdx, int medicineIdx) {
-        return notificationRepository.findByUserIdxAndMedicineIdx(userIdx, medicineIdx);
+    public Optional<Alarm> findAlarmByUserAndMedicineIdx(Long userIdx, int medicineIdx) {
+        return alarmRepository.findByUserIdxAndMedicineIdx(userIdx, medicineIdx);
     }
 
     public boolean updateMedicineInfoInExcel() {

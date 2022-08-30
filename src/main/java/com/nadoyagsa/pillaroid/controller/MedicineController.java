@@ -8,13 +8,13 @@ import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
 import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
-import com.nadoyagsa.pillaroid.dto.FavoritesAndNotificationResponse;
+import com.nadoyagsa.pillaroid.dto.FavoritesAndAlarmResponse;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
-import com.nadoyagsa.pillaroid.dto.NotificationResponse;
+import com.nadoyagsa.pillaroid.dto.AlarmResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import com.nadoyagsa.pillaroid.entity.Favorites;
-import com.nadoyagsa.pillaroid.entity.Notification;
+import com.nadoyagsa.pillaroid.entity.Alarm;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
 import com.nadoyagsa.pillaroid.service.BarcodeService;
 import com.nadoyagsa.pillaroid.service.MedicineService;
@@ -44,7 +44,7 @@ public class MedicineController {
         Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByIdx(idx);
 
         if (medicineResponse.isPresent()) {
-            return reflectFavoritesAndNotificationAboutMedicine(request, medicineResponse.get());
+            return reflectFavoritesAndAlarmAboutMedicine(request, medicineResponse.get());
         }
         else
             throw NotFoundException.MEDICINE_NOT_FOUND;
@@ -57,14 +57,14 @@ public class MedicineController {
             Optional<MedicineResponse> medicineResponse = medicineService.getMedicineInfoByStandardCode(barcode);
 
             if (medicineResponse.isPresent()) {
-                return reflectFavoritesAndNotificationAboutMedicine(request, medicineResponse.get());
+                return reflectFavoritesAndAlarmAboutMedicine(request, medicineResponse.get());
             }
             else {
                 String serialNumber = barcodeService.crawlSerialNumber(barcode);  // 바코드 번호로 품목일련번호 크롤링
                 medicineResponse = medicineService.getMedicineInfoBySerialNumber(Integer.parseInt(serialNumber));
 
                 if (medicineResponse.isPresent()) {
-                    return reflectFavoritesAndNotificationAboutMedicine(request, medicineResponse.get());
+                    return reflectFavoritesAndAlarmAboutMedicine(request, medicineResponse.get());
                 }
                 else {
                     throw NotFoundException.BARCODE_NOT_FOUND;
@@ -109,21 +109,21 @@ public class MedicineController {
 
     // 의약품에 대한 사용자 즐겨찾기, 알림 조회
     @GetMapping("/{id}/user-info")
-    public ApiResponse<FavoritesAndNotificationResponse> getFavoritesAndNotification(HttpServletRequest request, @PathVariable("id") int medicineIdx) {
+    public ApiResponse<FavoritesAndAlarmResponse> getFavoritesAndAlarm(HttpServletRequest request, @PathVariable("id") int medicineIdx) {
         Long userIdx = findUserIdxByToken(request);
 
         Optional<Favorites> favorites = medicineService.findFavoritesByUserAndMedicineIdx(userIdx, medicineIdx);
-        Optional<Notification> notification = medicineService.findNotificationByUserAndMedicineIdx(userIdx, medicineIdx);
+        Optional<Alarm> alarm = medicineService.findAlarmByUserAndMedicineIdx(userIdx, medicineIdx);
 
         // Optional에 값이 없으면 null로 저장
         Long favoritesIdx = favorites.map(Favorites::getFavoritesIdx).orElse(null);
-        NotificationResponse notificationResponse = notification.map(Notification::toNotificationResponse).orElse(null);
+        AlarmResponse alarmResponse = alarm.map(Alarm::toAlarmResponse).orElse(null);
 
-        FavoritesAndNotificationResponse favoritesAndNotification = FavoritesAndNotificationResponse.builder()
+        FavoritesAndAlarmResponse favoritesAndAlarm = FavoritesAndAlarmResponse.builder()
                 .favoritesIdx(favoritesIdx)
-                .notificationResponse(notificationResponse)
+                .alarmResponse(alarmResponse)
                 .build();
-        return ApiResponse.success(favoritesAndNotification);
+        return ApiResponse.success(favoritesAndAlarm);
     }
 
     // 사용자 jwt 토큰으로부터 회원 정보 조회
@@ -135,7 +135,7 @@ public class MedicineController {
         }
     }
 
-    private ApiResponse<MedicineResponse> reflectFavoritesAndNotificationAboutMedicine(HttpServletRequest request, MedicineResponse medicineResponse) {
+    private ApiResponse<MedicineResponse> reflectFavoritesAndAlarmAboutMedicine(HttpServletRequest request, MedicineResponse medicineResponse) {
         if (request.getHeader("authorization") != null) {       // 로그인 된 사용자라면 즐겨찾기 여부를 보여줌
             Long userIdx = findUserIdxByToken(request);
 
@@ -144,9 +144,9 @@ public class MedicineController {
                 medicineResponse.setFavoritesIdx(favorites.get().getFavoritesIdx());
             }
 
-            Optional<Notification> notification = medicineService.findNotificationByUserAndMedicineIdx(userIdx, medicineResponse.getMedicineIdx());
-            if (notification.isPresent()) { // 알림 설정을 했을 시
-                medicineResponse.setNotificationResponse(notification.get().toNotificationResponse());
+            Optional<Alarm> alarm = medicineService.findAlarmByUserAndMedicineIdx(userIdx, medicineResponse.getMedicineIdx());
+            if (alarm.isPresent()) { // 알림 설정을 했을 시
+                medicineResponse.setAlarmResponse(alarm.get().toAlarmResponse());
             }
         }
         return ApiResponse.success(medicineResponse);

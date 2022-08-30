@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class FavoritesAndNotificationResponse {
+public class FavoritesAndAlarmResponse {
 	private Long favoritesIdx = null;
-	private NotificationResponse notificationResponse = null;
+	private AlarmResponse alarmResponse = null;
 }

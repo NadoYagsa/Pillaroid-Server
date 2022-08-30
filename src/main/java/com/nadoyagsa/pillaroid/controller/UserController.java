@@ -6,19 +6,19 @@ import com.nadoyagsa.pillaroid.common.exception.ForbiddenException;
 import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
 import com.nadoyagsa.pillaroid.common.exception.UnauthorizedException;
-import com.nadoyagsa.pillaroid.dto.AlarmTimeDto;
-import com.nadoyagsa.pillaroid.dto.AlarmTimeResponse;
+import com.nadoyagsa.pillaroid.dto.MealTimeDto;
+import com.nadoyagsa.pillaroid.dto.MealTimeResponse;
 import com.nadoyagsa.pillaroid.dto.FavoritesDTO;
 import com.nadoyagsa.pillaroid.dto.FavoritesResponse;
-import com.nadoyagsa.pillaroid.dto.NotificationDto;
-import com.nadoyagsa.pillaroid.dto.NotificationResponse;
-import com.nadoyagsa.pillaroid.dto.NotificationTimeResponse;
+import com.nadoyagsa.pillaroid.dto.AlarmDto;
+import com.nadoyagsa.pillaroid.dto.AlarmResponse;
+import com.nadoyagsa.pillaroid.dto.AlarmTimeResponse;
 import com.nadoyagsa.pillaroid.entity.Favorites;
 import com.nadoyagsa.pillaroid.entity.User;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
-import com.nadoyagsa.pillaroid.service.AlarmTimeService;
+import com.nadoyagsa.pillaroid.service.MealTimeService;
 import com.nadoyagsa.pillaroid.service.FavoritesService;
-import com.nadoyagsa.pillaroid.service.NotificationService;
+import com.nadoyagsa.pillaroid.service.AlarmService;
 import com.nadoyagsa.pillaroid.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,18 +36,18 @@ public class UserController {
     private final AuthTokenProvider authTokenProvider;
     private final UserService userService;
     private final FavoritesService favoritesService;
-    private final AlarmTimeService alarmTimeService;
-    private final NotificationService notificationService;
+    private final MealTimeService mealTimeService;
+    private final AlarmService alarmService;
 
     @Autowired
     public UserController(AuthTokenProvider authTokenProvider, UserService userService,
-            FavoritesService favoritesService, AlarmTimeService alarmTimeService,
-            NotificationService notificationService) {
+            FavoritesService favoritesService, MealTimeService mealTimeService,
+            AlarmService alarmService) {
         this.authTokenProvider = authTokenProvider;
         this.userService = userService;
         this.favoritesService = favoritesService;
-        this.alarmTimeService = alarmTimeService;
-        this.notificationService = notificationService;
+        this.mealTimeService = mealTimeService;
+        this.alarmService = alarmService;
     }
 
     /* 즐겨찾기 */
@@ -149,54 +149,54 @@ public class UserController {
 
     /* 복용 시간대 */
     // 사용자의 복용 시간대 조회
-    @GetMapping("/alarmtime")
-    public ApiResponse<AlarmTimeResponse> getUserAlarmTime(HttpServletRequest request) {
+    @GetMapping("/mealtime")
+    public ApiResponse<MealTimeResponse> getUserMealTime(HttpServletRequest request) {
         User user = findUserByToken(request)
                 .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        AlarmTimeResponse alarmTime = alarmTimeService.findAlarmTimeByUser(user);
-        return ApiResponse.success(alarmTime);
+        MealTimeResponse mealTime = mealTimeService.findMealTimeByUser(user);
+        return ApiResponse.success(mealTime);
     }
 
     // 사용자의 복용 시간대 추가 및 수정
-    @PostMapping("/alarmtime")
-    public ApiResponse<AlarmTimeResponse> saveUserAlarmTime(HttpServletRequest request, @RequestBody @Valid AlarmTimeDto alarmTimeDto) {
+    @PostMapping("/mealtime")
+    public ApiResponse<MealTimeResponse> saveUserMealTime(HttpServletRequest request, @RequestBody @Valid MealTimeDto mealTimeDto) {
         User user = findUserByToken(request)
                 .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        AlarmTimeResponse alarmTime = alarmTimeService.saveAlarmTime(user, alarmTimeDto);
-        return ApiResponse.success(alarmTime);
+        MealTimeResponse mealTime = mealTimeService.saveMealTime(user, mealTimeDto);
+        return ApiResponse.success(mealTime);
     }
 
     /* 알림 */
     // 의약품에 대한 사용자 알림 조회
-    @GetMapping("/notifications/{mid}")
-    public ApiResponse<NotificationResponse> getUserNotification(HttpServletRequest request, @PathVariable("mid") int medicineIdx) {
+    @GetMapping("/alarm/{mid}")
+    public ApiResponse<AlarmResponse> getUserAlarm(HttpServletRequest request, @PathVariable("mid") int medicineIdx) {
         User user = findUserByToken(request)
                 .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        NotificationResponse notification = notificationService.findNotificationByUserAndMedicineIdx(user, medicineIdx);
-        return ApiResponse.success(notification);
+        AlarmResponse alarm = alarmService.findAlarmByUserAndMedicineIdx(user, medicineIdx);
+        return ApiResponse.success(alarm);
     }
 
     // 사용자의 의약품 알림 목록 조회
-    @GetMapping("/notifications/list")
-    public ApiResponse<List<NotificationResponse>> getUserNotificationList(HttpServletRequest request) {
+    @GetMapping("/alarm/list")
+    public ApiResponse<List<AlarmResponse>> getUserAlarmList(HttpServletRequest request) {
         User user = findUserByToken(request)
                 .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        List<NotificationResponse> notifications = notificationService.findNotificationByUser(user);
-        return ApiResponse.success(notifications);
+        List<AlarmResponse> alarms = alarmService.findAlarmByUser(user);
+        return ApiResponse.success(alarms);
     }
-
+    
     // 의약품에 대한 사용자 알림 삭제
-    @DeleteMapping("/notifications/{nid}")
-    public ApiResponse<NotificationTimeResponse> deleteUserNotification(HttpServletRequest request, @PathVariable("nid")  long notificationIdx) throws ForbiddenException {
+    @DeleteMapping("/alarm/{aid}")
+    public ApiResponse<AlarmTimeResponse> deleteUserAlarm(HttpServletRequest request, @PathVariable("aid")  long alarmIdx) throws ForbiddenException {
         User user = findUserByToken(request)
                 .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        NotificationTimeResponse notificationAndTime = notificationService.deleteNotification(user, notificationIdx);  // 알림 데이터 삭제
-        return ApiResponse.success(notificationAndTime);
+        AlarmTimeResponse alarmAndTime = alarmService.deleteAlarm(user, alarmIdx);  // 알림 데이터 삭제
+        return ApiResponse.success(alarmAndTime);
     }
 
     // 사용자 jwt 토큰으로부터 회원 정보 조회
