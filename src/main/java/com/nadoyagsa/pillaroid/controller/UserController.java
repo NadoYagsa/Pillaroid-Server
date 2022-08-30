@@ -188,7 +188,18 @@ public class UserController {
         List<AlarmResponse> alarms = alarmService.findAlarmByUser(user);
         return ApiResponse.success(alarms);
     }
-    
+
+    // TODO: 의약품에 대한 사용자 알림 등록
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/alarm")
+    public ApiResponse<AlarmTimeResponse> saveUserAlarm(HttpServletRequest request, @RequestBody AlarmDto alarmDto) {
+        User user = findUserByToken(request)
+                .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
+
+        AlarmTimeResponse alarmTimeResponse = alarmService.saveAlarm(user, alarmDto);
+        return ApiResponse.success(alarmTimeResponse);
+    }
+
     // 의약품에 대한 사용자 알림 삭제
     @DeleteMapping("/alarm/{aid}")
     public ApiResponse<AlarmTimeResponse> deleteUserAlarm(HttpServletRequest request, @PathVariable("aid")  long alarmIdx) throws ForbiddenException {

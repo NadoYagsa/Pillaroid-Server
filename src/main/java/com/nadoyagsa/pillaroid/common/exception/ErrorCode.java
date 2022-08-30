@@ -14,6 +14,7 @@ public enum ErrorCode {
 	BAD_PARAMETER(40001, BAD_REQUEST, "요청 파라미터가 잘못되었습니다."),
 	BAD_PARAMETER_TYPE(40002, BAD_REQUEST, "지원하지 않는 파라미터 형식입니다."),
 	NOT_SUPPORTED_BARCODE_FORMAT(40003, BAD_REQUEST, "지원하지 않는 바코드 형식입니다."),
+	NOT_EXIST_MEAL_TIME(40004, BAD_REQUEST, "복용 시간대가 설정되지 않았습니다."),
 
 	/* 401 UNAUTHORIZED: 인증 자격 없음 */
 	UNAUTHORIZED_USER(401, UNAUTHORIZED, "인증된 사용자가 아닙니다."),
