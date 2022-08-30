@@ -10,7 +10,6 @@ import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
 import com.nadoyagsa.pillaroid.component.MedicineExcelUtils;
 import com.nadoyagsa.pillaroid.dto.MedicineResponse;
 
-import com.nadoyagsa.pillaroid.dto.AlarmResponse;
 import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import com.nadoyagsa.pillaroid.entity.Favorites;
@@ -83,7 +82,7 @@ public class MedicineService {
             boolean isAdded = false;
             for (Medicine medicine : medicineList) {
                 if (medicine.getName().strip().equals(name)) {
-                    prescriptionList.add(medicine.toPrescriptionResponse(null, null));
+                    prescriptionList.add(medicine.toPrescriptionResponse(null));
 
                     isAdded = true;
                     break;
@@ -91,7 +90,7 @@ public class MedicineService {
             }
 
             if (!isAdded)
-                prescriptionList.add(medicineList.get(0).toPrescriptionResponse(null, null));
+                prescriptionList.add(medicineList.get(0).toPrescriptionResponse(null));
         }
         return prescriptionList;
     }
@@ -106,13 +105,9 @@ public class MedicineService {
             for (Medicine medicine : medicineList) {
                 if (medicine.getName().strip().equals(name)) {
                     Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, medicine.getMedicineIdx());
-                    Optional<Alarm> alarm = findAlarmByUserAndMedicineIdx(userIdx, medicine.getMedicineIdx());
 
-                    // Optional에 값이 없으면 null로 저장
-                    Long favoritesIdx = favorites.map(Favorites::getFavoritesIdx).orElse(null);
-                    AlarmResponse alarmResponse = alarm.map(Alarm::toAlarmResponse).orElse(null);
-
-                    prescriptionList.add(medicine.toPrescriptionResponse(favoritesIdx, alarmResponse));
+                    if (favorites.isPresent())
+                        prescriptionList.add(medicine.toPrescriptionResponse(favorites.get().getFavoritesIdx()));
 
                     isAdded = true;
                     break;
@@ -122,13 +117,11 @@ public class MedicineService {
             if (!isAdded) {
                 Medicine firstMedicine = medicineList.get(0);
                 Optional<Favorites> favorites = findFavoritesByUserAndMedicineIdx(userIdx, firstMedicine.getMedicineIdx());
-                Optional<Alarm> alarm = findAlarmByUserAndMedicineIdx(userIdx, firstMedicine.getMedicineIdx());
 
-                // Optional에 값이 없으면 null로 저장
-                Long favoritesIdx = favorites.map(Favorites::getFavoritesIdx).orElse(null);
-                AlarmResponse alarmResponse = alarm.map(Alarm::toAlarmResponse).orElse(null);
-
-                prescriptionList.add(firstMedicine.toPrescriptionResponse(favoritesIdx, alarmResponse));
+                if (favorites.isPresent())
+                    prescriptionList.add(firstMedicine.toPrescriptionResponse(favorites.get().getFavoritesIdx()));
+                else
+                    prescriptionList.add(firstMedicine.toPrescriptionResponse(null));
             }
         }
         return prescriptionList;
