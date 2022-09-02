@@ -1,5 +1,7 @@
 package com.nadoyagsa.pillaroid.service;
 
+import static java.time.temporal.ChronoUnit.*;
+
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,8 +66,11 @@ public class AlarmService {
 		Medicine medicine = medicineRepository.findById(alarmDto.getMedicineIdx())
 				.orElseThrow(() -> BadRequestException.BAD_PARAMETER);
 
+		MealTime mealTime = mealTimeRepository.findById(user.getUserIdx())
+				.orElseThrow(() -> BadRequestException.NOT_EXIST_MEAL_TIME);
+
 		Map<String, String> dosageSummary = parseDosage(medicine.getDosage());
-		Integer[] threeTakingTime = getThreeTakingTime(dosageSummary.get("number"), dosageSummary.get("when"));	// TODO: 메소드 구현
+		Integer[] threeTakingTime = getThreeTakingTime(mealTime, dosageSummary.get("number"), dosageSummary.get("when"));
 
 		// 알림 저장
 		Alarm alarm = Alarm.builder()
@@ -78,7 +83,7 @@ public class AlarmService {
 		Alarm savedAlarm = alarmRepository.save(alarm);
 
 		// 알림 시간 저장
-		List<AlarmTime> savedAlarmTimes = alarmTimeRepository.saveAll(createAlarmTime(user, threeTakingTime));
+		List<AlarmTime> savedAlarmTimes = alarmTimeRepository.saveAll(createAlarmTime(alarm, mealTime, threeTakingTime));
 
 		return new AlarmTimeResponse(savedAlarm, savedAlarmTimes);
 	}
@@ -89,20 +94,24 @@ public class AlarmService {
 		String amount = "";
 		String when = "";
 
-		Pattern patternNumber = Pattern.compile("(1일)\\s*([0-9]\\s?([~\\-])?\\s?[0-9]?([회번]))");	// 복용횟수 찾기
-		Matcher matcherNumber = patternNumber.matcher(dosage);
+		// "셋째날부터" 가 있으면 그 이후부터 찾음
+		String[] split = dosage.split("셋째날부터");
+		String commonDosage = split.length == 1 ? dosage : split[1];
+
+		Pattern patternNumber = Pattern.compile("(1일)\\s([0-9]\\s?([~～-])\\s?)?[0-9]\\s?([회번])");	// 복용횟수 찾기
+		Matcher matcherNumber = patternNumber.matcher(commonDosage);
 		if (matcherNumber.find()) {
 			number = matcherNumber.group().strip();
 		}
 
-		Pattern patternAmount = Pattern.compile("([0-9]+\\s?([~\\-])?\\s?[0-9]?(정|개|캡슐|캅셀|병|포|팩|환))");	// 복용량 찾기
-		Matcher matcherAmount = patternAmount.matcher(dosage);
+		Pattern patternAmount = Pattern.compile("([0-9]+\\s?([~～-])?\\s?[0-9]?(정|개|캡슐|캅셀|병|포|팩|환)(?!월))");	// 복용량 찾기
+		Matcher matcherAmount = patternAmount.matcher(commonDosage);
 		if (matcherAmount.find()) {
 			amount = matcherAmount.group().strip();
 		}
 
-		Pattern patternWhen = Pattern.compile("((식사\\s?전)|(식사\\s?후)|식전|식후|식간)\\s*(([1-6]{1}[0-9]{1})\\s?([~\\-])?\\s?([1-6]{1}[0-9]{1})?분)?([1-7](시간))?");	// 복용량 찾기
-		Matcher matcherWhen = patternWhen.matcher(dosage);
+		Pattern patternWhen = Pattern.compile("((식사\\s?전)|(식사\\s?후)|식전|식후|식간)\\s*(([1-6]{1}[0-9]{1})\\s?([~～-])?\\s?([1-6]{1}[0-9]{1})?분)?([1-7](시간))?");	// 복용시기 찾기
+		Matcher matcherWhen = patternWhen.matcher(commonDosage);
 		if (matcherWhen.find()) {
 			when = matcherWhen.group().strip();
 
@@ -111,64 +120,101 @@ public class AlarmService {
 
 		Map<String, String> map = new HashMap<>();
 		map.put("number", number);	// 복용횟수 ex) 1일 1회, 1일 1번
-		map.put("amount", amount);	// 복용량   ex) 1회 2정,
-		map.put("when", when);		// 복용시긴 ex) 식전 30분
+		map.put("amount", amount);	// 복용량   ex) 2정
+		map.put("when", when);		// 복용시간 ex) 식전 30분
 		return map;
 	}
 
 	// 상대복용시간 계산
-	private Integer[] getThreeTakingTime(String number, String when) {
-		Integer[] threeTakingTime = new Integer[3];	// 아침,점심,저녁식사 기준 상대복용시간 (단위:분) (ex. 1일 2회, 식전 30분: [-30,null,-30])
+	private Integer[] getThreeTakingTime(MealTime mealTime, String number, String when) {
+		Integer[] threeTakingTime = new Integer[3];	// 아침,점심,저녁식사 기준 상대복용시간 (단위:분) (ex. [-30,null,-30])
 
-		// 1회는 아침
-		if (number.contains("1회") || number.contains("1번")) {
-			if (when.equals("")) {
-				threeTakingTime[0] = -30;
+		if (number.equals("")) {
+			throw BadRequestException.CAN_NOT_CREATE_ALARM;
+		}
+
+		int num = calculateNum(number);		// 복용횟수
+		try {
+			int signedMinute = calculateMinute(when);	// 상대복용시간
+
+			if (num == 1) {
+				threeTakingTime[0] = signedMinute;	// 아침
+			} else if (num == 2) {
+				threeTakingTime[0] = signedMinute;	// 아침
+				threeTakingTime[2] = signedMinute;	// 저녁
+			} else if (num == 3) {
+				threeTakingTime[0] = signedMinute;	// 아침
+				threeTakingTime[1] = signedMinute;	// 점심
+				threeTakingTime[2] = signedMinute;	// 저녁
 			}
-			else if (when.contains("식전")) {
-				if (when.strip().equals("식전"))
-					threeTakingTime[0] = -30;
-				else if (when.contains("시간")) {
-					Integer time = Integer.valueOf(when.replaceAll("식전|시간", "").strip());
-					threeTakingTime[0] = time * 60 * -1;
-				}
-				else if (when.contains("분")) {
-					Integer time = Integer.valueOf(when.replaceAll("식전|분", "").strip());
-					threeTakingTime[0] = time * -1;
-				}
-			}
-			else if (when.contains("식후")) {
-				if (when.strip().equals("식후"))
-					threeTakingTime[0] = 30;
-				else if (when.contains("시간")) {
-					Integer time = Integer.valueOf(when.replaceAll("식후|시간", "").strip());
-					threeTakingTime[0] = time * 60;
-				}
-				else if (when.contains("분")) {
-					Integer time = Integer.valueOf(when.replaceAll("식후|분", "").strip());
-					threeTakingTime[0] = time;
-				}
-			}
-			else {	// 식간
-				// TODO: 식간
+		} catch (IllegalStateException e) {		// 식간
+			if (num == 1) {
+				long betweenMorningAndLunch = MINUTES.between(mealTime.getMorning(), mealTime.getLunch());
+				threeTakingTime[0] = Long.valueOf(betweenMorningAndLunch).intValue() / 2;
+			} else if (num == 2) {
+				long betweenMorningAndLunch = MINUTES.between(mealTime.getMorning(), mealTime.getLunch());
+				threeTakingTime[0] = Long.valueOf(betweenMorningAndLunch).intValue() / 2;
+
+				long betweenLunchAndDinner = MINUTES.between(mealTime.getLunch(), mealTime.getDinner());
+				threeTakingTime[1] = Long.valueOf(betweenLunchAndDinner).intValue() / 2;
+			} else {
+				throw BadRequestException.CAN_NOT_CREATE_ALARM;
 			}
 		}
 
 		return threeTakingTime;
 	}
 
-	// 복용 시간대를 기준으로 AlarmTime 객체 생성
-	private List<AlarmTime> createAlarmTime(User user, Integer[] threeTakingTime) {
-		List<AlarmTime> result = new ArrayList<>();
+	// 복용 횟수에서 숫자만 추출
+	private int calculateNum(String number) {
+		number = number.replaceAll(" |1일|회|번", "");
+		String[] split = number.split("[~～-]");
+		int min = Integer.parseInt(split[0]);
+		if (min > 3) {
+			throw BadRequestException.CAN_NOT_CREATE_ALARM;
+		}
+		return min;
+	}
 
-		MealTime mealTime = mealTimeRepository.findById(user.getUserIdx())
-				.orElseThrow(() -> BadRequestException.NOT_EXIST_MEAL_TIME);
+	// 문자로 된 상대 복용 시간을 숫자로 변환
+	private int calculateMinute(String when) {
+		when = when.replace(" ", "");
+
+		if (when.equals("식간")) {
+			throw new IllegalStateException();
+		}
+
+		if (when.equals("")) {	// 복용 시간이 없다면 식전 30분으로 설정
+			return -30;
+		}
+
+		int time = 1;
+		if (when.contains("식전")) {
+			time *= -1;
+		}
+
+		if (when.contains("시간")) {
+			time *= Integer.parseInt(when.replaceAll("식전|식후|시간", ""));
+			time *= 60;
+		} else if (when.contains("분")) {
+			time *= Integer.parseInt(when.replaceAll("식전|식후|분", ""));
+		} else {	// 식전/식후만 있고 시간 단위가 없다면 30분으로 설정
+			time *= 30;
+		}
+
+		return time;
+	}
+
+	// 복용 시간대를 기준으로 AlarmTime 객체 생성
+	private List<AlarmTime> createAlarmTime(Alarm alarm, MealTime mealTime, Integer[] threeTakingTime) {
+		List<AlarmTime> result = new ArrayList<>();
 
 		LocalTime[] mealTimes = { mealTime.getMorning(), mealTime.getLunch(), mealTime.getDinner() };
 		for (int i = 0; i < 3; i++) {
 			if (threeTakingTime[i] != null) {
 				LocalTime time = mealTimes[i].plusMinutes(threeTakingTime[i]);
 				AlarmTime alarmTime = AlarmTime.builder()
+						.alarm(alarm)
 						.time(time)
 						.build();
 				result.add(alarmTime);

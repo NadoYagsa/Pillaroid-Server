@@ -4,6 +4,8 @@ import java.time.LocalTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
@@ -24,6 +26,7 @@ import lombok.NoArgsConstructor;
 public class AlarmTime {
 	@Id
 	@Column(name = "alarm_time_idx")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long alarmTimeIdx;
 
 	@OneToOne
