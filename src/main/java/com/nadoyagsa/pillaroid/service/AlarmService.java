@@ -74,6 +74,9 @@ public class AlarmService {
 				.orElseThrow(() -> BadRequestException.NOT_EXIST_MEAL_TIME);
 
 		Map<String, String> dosageSummary = parseDosage(medicine.getDosage());
+		String amount = dosageSummary.get("amount").replace(" ", "");
+		amount = amount.equals("") ? null : amount;
+
 		Integer[] threeTakingTime = getThreeTakingTime(mealTime, dosageSummary.get("number"), dosageSummary.get("when"));
 
 		// 알림 저장
@@ -82,6 +85,7 @@ public class AlarmService {
 				.medicine(medicine)
 				.name(alarmDto.getName())
 				.period(alarmDto.getPeriod())
+				.amount(amount)
 				.dosage(String.format("%s, %s, %s", dosageSummary.get("number"), dosageSummary.get("amount"), dosageSummary.get("when")))
 				.build();
 		Alarm savedAlarm = alarmRepository.save(alarm);

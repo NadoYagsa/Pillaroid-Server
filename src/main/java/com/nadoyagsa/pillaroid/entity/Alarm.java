@@ -44,6 +44,9 @@ public class Alarm {
 	private int period;
 
 	@Column
+	private String amount;
+
+	@Column
 	private String dosage;
 
 	public AlarmResponse toAlarmResponse() {
