@@ -3,6 +3,11 @@ package com.nadoyagsa.pillaroid.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nadoyagsa.pillaroid.common.dto.ApiResponse;
+import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
+import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
+import com.nadoyagsa.pillaroid.dto.LoginDTO;
+import com.nadoyagsa.pillaroid.dto.LoginResponse;
 import com.nadoyagsa.pillaroid.entity.User;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
 import com.nadoyagsa.pillaroid.service.UserService;
@@ -12,8 +17,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -28,12 +31,11 @@ public class LoginController {
         this.authTokenProvider = authTokenProvider;
     }
 
-    // 카카오 로그인 (Input: access token)
+    // 카카오 로그인 (Input: access_token)
     @PostMapping("/kakao")
-    public ResponseEntity<Map<String, Object>> kakaoLogin(@RequestBody Map<String, String> requestBody) {
-        String accessToken = requestBody.get("access_token");
-
-        HashMap<String, Object> response = new HashMap<>(); // 서버->클라이언트 응답
+    public ApiResponse<LoginResponse> kakaoLogin(@RequestBody LoginDTO loginDTO) {
+        String accessToken = loginDTO.getAccessToken();
+        String alarmToken = loginDTO.getAlarmToken() == null ? "" : loginDTO.getAlarmToken();
 
         RestTemplate restTemplate = new RestTemplate();     // Spring의 HTTP 통신 템플릿
         // 카카오로 보낼 헤더 설정
@@ -51,8 +53,7 @@ public class LoginController {
                     String.class
             );
         } catch (Exception e) {     // 카카오로 요청 실패
-            response.put("success", false);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);              // Status Code=400
+            throw BadRequestException.BAD_PARAMETER;            // Status Code=400
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -61,27 +62,43 @@ public class LoginController {
             JsonNode userInfo = objectMapper.readTree(kakaoResponse.getBody());
             kakaoUserId = userInfo.path("id").asLong();
         } catch (JsonProcessingException e) {
-            response.put("success", false);
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);    // Status Code=500
+            throw InternalServerException.INTERNAL_ERROR;       // Status Code=500
         }
 
         Optional<User> user = userService.findUserByKakaoAccountId(kakaoUserId);
         // 클라이언트의 로그인 경험 있음
         if (user.isPresent()) {
-            String authToken = authTokenProvider.createAuthToken(user.get().getUserIdx());
+            // 알람 토큰이 다르다면 갱신
+            if (!user.get().getAlarmToken().equals(alarmToken) && !alarmToken.equals("")) {
+                user.get().setAlarmToken(alarmToken);
+                userService.save(user.get());
+            }
 
-            response.put("success", true);
-            response.put("authToken", authToken);
-            return new ResponseEntity<>(response, HttpStatus.OK);                       // Status Code=200
+            String authToken = authTokenProvider.createAuthToken(user.get().getUserIdx());      // 토큰 생성
+
+            LoginResponse response = LoginResponse.builder()
+                    .authToken(authToken)
+                    .build();
+
+            return ApiResponse.success(response);
         }
         // 클라이언트의 로그인 경험 없음(DB에 사용자 추가)
         else {
-            User newUser = userService.signUp(new User(kakaoUserId));
+            User newUser = User.builder()
+                    .kakaoAccountId(kakaoUserId)
+                    .alarmToken(alarmToken)
+                    .build();
+            newUser = userService.signUp(newUser);
+
             String authToken = authTokenProvider.createAuthToken(newUser.getUserIdx());
 
-            response.put("success", true);
-            response.put("authToken", authToken);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);                  // Status Code=201
+            LoginResponse response = LoginResponse.builder()
+                    .authToken(authToken)
+                    .build();
+
+            return ApiResponse.success(response);
+
+            // TODO: 추후에 CREATED(201)로 전달해야 함
         }
     }
 

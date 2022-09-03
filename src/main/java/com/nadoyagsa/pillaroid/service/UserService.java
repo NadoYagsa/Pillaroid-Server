@@ -1,5 +1,6 @@
 package com.nadoyagsa.pillaroid.service;
 
+import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.entity.User;
 import com.nadoyagsa.pillaroid.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class UserService {
             userRepository.save(user);
             return true;
         } catch (Exception e) {
-            return false;
+            throw InternalServerException.INTERNAL_ERROR;
         }
     }
 }
