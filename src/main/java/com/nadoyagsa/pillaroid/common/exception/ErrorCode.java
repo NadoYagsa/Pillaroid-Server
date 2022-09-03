@@ -23,10 +23,13 @@ public enum ErrorCode {
 	/* 403 FORBIDDEN: 권한 없음 */
 	DELETE_FORBIDDEN(40301, FORBIDDEN, "삭제할 권한이 없습니다."),
 
-	/* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
+	/* 404 NOT_FOUND: Resource 를 찾을 수 없음 */
 	DATA_NOT_FOUND(40403, NOT_FOUND, "해당 정보가 없습니다."),
 	BARCODE_NOT_FOUND(40401, NOT_FOUND, "해당 바코드에 대한 정보가 없습니다."),
 	MEDICINE_NOT_FOUND(40402, NOT_FOUND, "조건에 맞는 의약품이 존재하지 않습니다."),
+
+	/* 408 CONFLICT: 요청이 현재 서버의 상태와 충돌 */
+	DATA_CONFLICT(40901, CONFLICT, "리소스 충돌이 발생했습니다."),
 
 	/* 500 INTERNAL_SERVER_ERROR : 서버 오류 */
 	INTERNAL_ERROR(500, INTERNAL_SERVER_ERROR, "서버 내부 오류로 인해 응답을 제공할 수 없습니다.");

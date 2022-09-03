@@ -1,9 +1,9 @@
 package com.nadoyagsa.pillaroid.common.controller;
 
 import java.io.IOException;
-import java.time.format.DateTimeParseException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.nadoyagsa.pillaroid.common.exception.ConflictException;
 import com.nadoyagsa.pillaroid.common.exception.ForbiddenException;
 import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import org.springframework.http.HttpStatus;
@@ -72,6 +72,13 @@ public class ResponseEntityExceptionHandler {
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)
 	@ExceptionHandler(value = {NotFoundException.class})
 	protected ApiResponse notFoundError(NotFoundException ex) {
+		log.info(ex.getErrorCode().getDetail());
+		return ApiResponse.error(ex.getErrorCode());
+	}
+
+	@ResponseStatus(value = HttpStatus.CONFLICT)
+	@ExceptionHandler(value = {ConflictException.class})
+	protected ApiResponse conflictError(ConflictException ex) {
 		log.info(ex.getErrorCode().getDetail());
 		return ApiResponse.error(ex.getErrorCode());
 	}

@@ -6,7 +6,6 @@ import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.UnauthorizedException;
 import com.nadoyagsa.pillaroid.dto.AlarmDto;
 import com.nadoyagsa.pillaroid.dto.AlarmResponse;
-import com.nadoyagsa.pillaroid.dto.AlarmTimeResponse;
 import com.nadoyagsa.pillaroid.entity.User;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
 import com.nadoyagsa.pillaroid.service.AlarmService;
@@ -53,25 +52,25 @@ public class AlarmController {
         return ApiResponse.success(alarms);
     }
 
-    // TODO: 의약품에 대한 사용자 알림 등록
+    // 의약품에 대한 사용자 알림 등록
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ApiResponse<AlarmTimeResponse> saveUserAlarm(HttpServletRequest request, @RequestBody AlarmDto alarmDto) {
+    public ApiResponse<AlarmResponse> saveUserAlarm(HttpServletRequest request, @RequestBody AlarmDto alarmDto) {
         User user = findUserByToken(request)
                 .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        AlarmTimeResponse alarmTimeResponse = alarmService.saveAlarm(user, alarmDto);
-        return ApiResponse.success(alarmTimeResponse);
+        AlarmResponse alarmResponse = alarmService.saveAlarm(user, alarmDto);
+        return ApiResponse.success(alarmResponse);
     }
 
     // 의약품에 대한 사용자 알림 삭제
     @DeleteMapping("/{aid}")
-    public ApiResponse<AlarmTimeResponse> deleteUserAlarm(HttpServletRequest request, @PathVariable("aid")  long alarmIdx) throws ForbiddenException {
+    public ApiResponse<String> deleteUserAlarm(HttpServletRequest request, @PathVariable("aid")  long alarmIdx) throws ForbiddenException {
         User user = findUserByToken(request)
                 .orElseThrow(() -> UnauthorizedException.UNAUTHORIZED_USER);
 
-        AlarmTimeResponse alarmAndTime = alarmService.deleteAlarm(user, alarmIdx);  // 알림 데이터 삭제
-        return ApiResponse.success(alarmAndTime);
+        alarmService.deleteAlarm(user, alarmIdx);  // 알림 데이터 삭제
+        return ApiResponse.SUCCESS;
     }
 
     // 사용자 jwt 토큰으로부터 회원 정보 조회

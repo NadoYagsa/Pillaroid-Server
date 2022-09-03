@@ -1,6 +1,6 @@
 package com.nadoyagsa.pillaroid.entity;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -34,7 +34,7 @@ public class AlarmTime {
 	private Alarm alarm;
 
 	@Column
-	private LocalTime time;
+	private LocalDateTime time;
 
 	public AlarmTimeDto toAlarmTimeDto() {
 		return AlarmTimeDto.builder()

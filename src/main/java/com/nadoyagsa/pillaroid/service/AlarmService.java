@@ -2,6 +2,7 @@ package com.nadoyagsa.pillaroid.service;
 
 import static java.time.temporal.ChronoUnit.*;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,12 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nadoyagsa.pillaroid.common.exception.BadRequestException;
+import com.nadoyagsa.pillaroid.common.exception.ConflictException;
 import com.nadoyagsa.pillaroid.common.exception.ForbiddenException;
 import com.nadoyagsa.pillaroid.common.exception.NotFoundException;
 import com.nadoyagsa.pillaroid.dto.AlarmDto;
 import com.nadoyagsa.pillaroid.dto.AlarmResponse;
-import com.nadoyagsa.pillaroid.dto.AlarmTimeDto;
-import com.nadoyagsa.pillaroid.dto.AlarmTimeResponse;
 import com.nadoyagsa.pillaroid.entity.MealTime;
 import com.nadoyagsa.pillaroid.entity.Medicine;
 import com.nadoyagsa.pillaroid.entity.Alarm;
@@ -62,9 +62,13 @@ public class AlarmService {
 
 	// 의약품에 해당하는 사용자 알림 등록
 	@Transactional
-	public AlarmTimeResponse saveAlarm(User user, AlarmDto alarmDto) {
+	public AlarmResponse saveAlarm(User user, AlarmDto alarmDto) {
 		Medicine medicine = medicineRepository.findById(alarmDto.getMedicineIdx())
 				.orElseThrow(() -> BadRequestException.BAD_PARAMETER);
+
+		if (alarmRepository.findByUserAndMedicine(user, medicine).isPresent()) {
+			throw ConflictException.DATA_CONFLICT;
+		}
 
 		MealTime mealTime = mealTimeRepository.findById(user.getUserIdx())
 				.orElseThrow(() -> BadRequestException.NOT_EXIST_MEAL_TIME);
@@ -83,9 +87,9 @@ public class AlarmService {
 		Alarm savedAlarm = alarmRepository.save(alarm);
 
 		// 알림 시간 저장
-		List<AlarmTime> savedAlarmTimes = alarmTimeRepository.saveAll(createAlarmTime(alarm, mealTime, threeTakingTime));
+		alarmTimeRepository.saveAll(createAlarmTime(alarm, mealTime, threeTakingTime));
 
-		return new AlarmTimeResponse(savedAlarm, savedAlarmTimes);
+		return savedAlarm.toAlarmResponse();
 	}
 
 	// 용법용량에서 복용횟수, 복용량, 복용시기 파싱
@@ -210,14 +214,18 @@ public class AlarmService {
 		List<AlarmTime> result = new ArrayList<>();
 
 		LocalTime[] mealTimes = { mealTime.getMorning(), mealTime.getLunch(), mealTime.getDinner() };
-		for (int i = 0; i < 3; i++) {
-			if (threeTakingTime[i] != null) {
-				LocalTime time = mealTimes[i].plusMinutes(threeTakingTime[i]);
-				AlarmTime alarmTime = AlarmTime.builder()
-						.alarm(alarm)
-						.time(time)
-						.build();
-				result.add(alarmTime);
+		for (int day = 0; day < alarm.getPeriod(); day++) {
+			LocalDate alarmDay = LocalDate.now().plusDays(day);
+
+			for (int i = 0; i < 3; i++) {
+				if (threeTakingTime[i] != null) {
+					LocalTime time = mealTimes[i].plusMinutes(threeTakingTime[i]);
+					AlarmTime alarmTime = AlarmTime.builder()
+							.alarm(alarm)
+							.time(alarmDay.atTime(time))
+							.build();
+					result.add(alarmTime);
+				}
 			}
 		}
 
@@ -226,7 +234,7 @@ public class AlarmService {
 
 	// 의약품에 해당하는 사용자 알림 삭제
 	@Transactional
-	public AlarmTimeResponse deleteAlarm(User user, long alarmIdx) throws NotFoundException, ForbiddenException {
+	public void deleteAlarm(User user, long alarmIdx) throws NotFoundException, ForbiddenException {
 		// 알림 데이터가 있는지 검사
 		Alarm alarm = alarmRepository.findById(alarmIdx)
 				.orElseThrow(() -> BadRequestException.BAD_PARAMETER);
@@ -236,17 +244,6 @@ public class AlarmService {
 			throw ForbiddenException.deleteForbidden;
 		}
 
-		List<AlarmTime> alarmTimes = alarmTimeRepository.findByAlarm(alarm);		// 삭제할 알림과 관련된 시간 데이터 조회
-		alarmRepository.deleteById(alarm.getAlarmIdx());	// 데이터 삭제
-
-		// 전달할 Response 생성
-		List<AlarmTimeDto> alarmTimeDtos = alarmTimes.stream()
-				.map(AlarmTime::toAlarmTimeDto)
-				.collect(Collectors.toList());
-
-		return AlarmTimeResponse.builder()
-				.alarmIdx(alarmIdx)
-				.alarmTimeList(alarmTimeDtos)
-				.build();
+		alarmRepository.deleteById(alarmIdx);	// 데이터 삭제
 	}
 }
