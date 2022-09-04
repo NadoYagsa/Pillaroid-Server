@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class FavoritesAndAlarmResponse {
-	private Long favoritesIdx = null;
-	private AlarmResponse alarmResponse = null;
+	private Long favoritesIdx;
+	private AlarmResponse alarmResponse;
 }

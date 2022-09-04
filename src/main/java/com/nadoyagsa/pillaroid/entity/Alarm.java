@@ -41,13 +41,13 @@ public class Alarm {
 	private String name;
 
 	@Column
-	private int period;
+	private int period;			// 복용기간
 
 	@Column
-	private String amount;
+	private String amount;		// 복용량
 
 	@Column
-	private String dosage;
+	private String dosage;		// 복용 설명
 
 	public AlarmResponse toAlarmResponse() {
 		return AlarmResponse.builder()

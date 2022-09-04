@@ -2,21 +2,11 @@ package com.nadoyagsa.pillaroid.entity;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import com.nadoyagsa.pillaroid.dto.AlarmTimeDto;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -29,17 +19,24 @@ public class AlarmTime {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long alarmTimeIdx;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "alarm_idx")
 	private Alarm alarm;
 
+	@Getter
 	@Column
 	private LocalDateTime time;
 
 	public AlarmTimeDto toAlarmTimeDto() {
+		// 의약품 이름에서 괄호 이후는 제거함
+		int index = alarm.getMedicine().getName().indexOf("(");
+		String medicineName = index>-1 ? alarm.getMedicine().getName().substring(0, index) : alarm.getMedicine().getName();
+
 		return AlarmTimeDto.builder()
 				.alarmTimeIdx(this.alarmTimeIdx)
-				.time(this.time)
+				.alarmToken(alarm.getUser().getAlarmToken())
+				.medicineName(medicineName.strip())
+				.amount(alarm.getAmount())
 				.build();
 	}
 }

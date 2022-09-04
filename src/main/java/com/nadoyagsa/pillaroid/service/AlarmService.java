@@ -3,6 +3,7 @@ package com.nadoyagsa.pillaroid.service;
 import static java.time.temporal.ChronoUnit.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.nadoyagsa.pillaroid.dto.AlarmTimeDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 public class AlarmService {
-
 	private final AlarmRepository alarmRepository;
 	private final AlarmTimeRepository alarmTimeRepository;
 	private final MedicineRepository medicineRepository;
@@ -58,6 +59,13 @@ public class AlarmService {
 		return alarms.stream()
 				.map(Alarm::toAlarmResponse)
 				.collect(Collectors.toList());
+	}
+
+	// 해당 날짜 및 시간에 맞는 의약품 알람 조회
+	public List<AlarmTimeDto> findAlarmTimeByDateTime(LocalDateTime dateTime) {
+		List<AlarmTime> alarmTimeList = alarmTimeRepository.findByAlarmTime(dateTime);
+
+		return alarmTimeList.stream().map(AlarmTime::toAlarmTimeDto).collect(Collectors.toList());
 	}
 
 	// 의약품에 해당하는 사용자 알림 등록

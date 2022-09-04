@@ -6,15 +6,22 @@ import com.nadoyagsa.pillaroid.common.exception.InternalServerException;
 import com.nadoyagsa.pillaroid.common.exception.UnauthorizedException;
 import com.nadoyagsa.pillaroid.dto.AlarmDto;
 import com.nadoyagsa.pillaroid.dto.AlarmResponse;
+import com.nadoyagsa.pillaroid.dto.AlarmTimeDto;
 import com.nadoyagsa.pillaroid.entity.User;
 import com.nadoyagsa.pillaroid.jwt.AuthTokenProvider;
 import com.nadoyagsa.pillaroid.service.AlarmService;
+import com.nadoyagsa.pillaroid.service.FirebaseMessageService;
 import com.nadoyagsa.pillaroid.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,13 +31,36 @@ public class AlarmController {
     private final AuthTokenProvider authTokenProvider;
     private final UserService userService;
     private final AlarmService alarmService;
+    private final FirebaseMessageService firebaseMessageService;
 
     @Autowired
-    public AlarmController(AuthTokenProvider authTokenProvider, UserService userService, AlarmService alarmService) {
+    public AlarmController(AuthTokenProvider authTokenProvider, UserService userService, AlarmService alarmService, FirebaseMessageService firebaseMessageService) {
         this.authTokenProvider = authTokenProvider;
         this.userService = userService;
         this.alarmService = alarmService;
+        this.firebaseMessageService = firebaseMessageService;
     }
+
+    // 사용자 의약품 알림 (매 시간 0분부터 60분까지 10분 단위로 일치 알림 전달)
+    @Scheduled(cron = "0 0/10 * * * ?", zone = "Asia/Seoul")
+    public void sendMedicineAlarm() {
+        LocalDateTime current = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+
+        List<AlarmTimeDto> alarmTimeList = alarmService.findAlarmTimeByDateTime(current);
+
+        for (AlarmTimeDto alarmTime: alarmTimeList) {
+            if (!alarmTime.getAlarmToken().equals("")) {
+                String content = alarmTime.getMedicineName() + " 복용 시간입니다.\n" + alarmTime.getMedicineName() + "은(는) " + alarmTime.getAmount() + " 복용하시면 됩니다.";
+
+                try {
+                    firebaseMessageService.sendMessageTo(alarmTime.getAlarmToken(), "Pillaroid 의약품 복용 알람", content);
+                } catch (IOException e) {
+                    throw InternalServerException.INTERNAL_ERROR;
+                }
+            }
+        }
+    }
+
 
     // 의약품에 대한 사용자 알림 조회
     @GetMapping("/{mid}")

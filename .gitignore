@@ -26,6 +26,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 src/main/resources/application.properties
+src/main/resources/firebase/firebase_service_key.json
 src/main/resources/**/medicine.xlsx
 src/main/resources/**/medicine_result.xlsx
 src/test/java/com/nadoyagsa/pillaroid/service

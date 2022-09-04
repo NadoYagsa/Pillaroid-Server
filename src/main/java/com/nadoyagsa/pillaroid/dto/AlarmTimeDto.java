@@ -1,7 +1,5 @@
 package com.nadoyagsa.pillaroid.dto;
 
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Builder;
@@ -12,5 +10,7 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AlarmTimeDto {
 	private long alarmTimeIdx;
-	private LocalDateTime time;
+	private String alarmToken;
+	private String medicineName;
+	private String amount;
 }
