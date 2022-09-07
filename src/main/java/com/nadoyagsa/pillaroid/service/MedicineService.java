@@ -14,8 +14,11 @@ import com.nadoyagsa.pillaroid.dto.PrescriptionResponse;
 import com.nadoyagsa.pillaroid.dto.VoiceResponse;
 import com.nadoyagsa.pillaroid.entity.Favorites;
 import com.nadoyagsa.pillaroid.entity.Medicine;
+import com.nadoyagsa.pillaroid.entity.Alarm;
 import com.nadoyagsa.pillaroid.repository.FavoritesRepository;
 import com.nadoyagsa.pillaroid.repository.MedicineRepository;
+import com.nadoyagsa.pillaroid.repository.AlarmRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +27,16 @@ public class MedicineService {
     private final MedicineRepository medicineRepository;
     private final MedicineExcelUtils medicineExcelUtils;
     private final FavoritesRepository favoritesRepository;
+    private final AlarmRepository alarmRepository;
 
     @Autowired
-    public MedicineService(MedicineRepository medicineRepository, MedicineExcelUtils medicineExcelUtils, FavoritesRepository favoritesRepository) {
+    public MedicineService(MedicineRepository medicineRepository, MedicineExcelUtils medicineExcelUtils,
+            FavoritesRepository favoritesRepository,
+            AlarmRepository alarmRepository) {
         this.medicineRepository = medicineRepository;
         this.medicineExcelUtils = medicineExcelUtils;
         this.favoritesRepository = favoritesRepository;
+        this.alarmRepository = alarmRepository;
     }
 
     public Optional<MedicineResponse> getMedicineInfoByIdx(int idx) {
@@ -101,8 +108,6 @@ public class MedicineService {
 
                     if (favorites.isPresent())
                         prescriptionList.add(medicine.toPrescriptionResponse(favorites.get().getFavoritesIdx()));
-                    else
-                        prescriptionList.add(medicine.toPrescriptionResponse(null));
 
                     isAdded = true;
                     break;
@@ -126,6 +131,11 @@ public class MedicineService {
     // 의약품 번호와 회원 번호로 즐겨찾기 조회
     public Optional<Favorites> findFavoritesByUserAndMedicineIdx(Long userIdx, int medicineIdx) {
         return favoritesRepository.findFavoritesByUserAndMedicine(userIdx, medicineIdx);
+    }
+
+    // 의약품에 해당하는 사용자 알림 조회
+    public Optional<Alarm> findAlarmByUserAndMedicineIdx(Long userIdx, int medicineIdx) {
+        return alarmRepository.findByUserIdxAndMedicineIdx(userIdx, medicineIdx);
     }
 
     public boolean updateMedicineInfoInExcel() {

@@ -21,7 +21,8 @@ public class User {
     @Column(name = "kakao_account_id", nullable = false)
     private Long kakaoAccountId;
 
-    public User(Long kakaoAccountId) {
-        this.kakaoAccountId = kakaoAccountId;
-    }
+    @JsonIgnore
+    @Setter
+    @Column(name = "alarm_token")
+    private String alarmToken;
 }

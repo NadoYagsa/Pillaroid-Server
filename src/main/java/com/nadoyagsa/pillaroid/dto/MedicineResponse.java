@@ -19,4 +19,7 @@ public class MedicineResponse {
 
 	@Setter
 	private Long favoritesIdx = null;
+
+	@Setter
+	private AlarmResponse alarmResponse = null;
 }
