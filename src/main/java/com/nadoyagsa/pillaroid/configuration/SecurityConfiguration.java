@@ -17,9 +17,9 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //토큰 검사 안하는 경로 설정함(/login/**, 알약 검색 등)
+        // 토큰 검사 안하는 경로 설정함(/login/**, 알약 검색 등)
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns(new String[]{"/login/**", "/barcode/**", "/medicine/**"});
+                .excludePathPatterns(new String[]{"/login/**", "/medicine/**", "/pill"});
     }
 }
