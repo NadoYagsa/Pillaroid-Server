@@ -108,6 +108,8 @@ public class MedicineService {
 
                     if (favorites.isPresent())
                         prescriptionList.add(medicine.toPrescriptionResponse(favorites.get().getFavoritesIdx()));
+                    else
+                        prescriptionList.add(medicine.toPrescriptionResponse(null));
 
                     isAdded = true;
                     break;
