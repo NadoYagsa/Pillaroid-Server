@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @JsonInclude(Include.NON_NULL)
-public class ApiResponse<T> {	//TODO: 추후, 구체적인 오류사항이 담긴 Error 객체 만들고 ApiUtil로 클래스 바꾸기
+public class ApiResponse<T> {
 	public static final ApiResponse<String> SUCCESS = success("OK");	//body 없는 200 response
 
 	private Long errorIdx;

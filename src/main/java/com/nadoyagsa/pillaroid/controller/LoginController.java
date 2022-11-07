@@ -97,8 +97,6 @@ public class LoginController {
                     .build();
 
             return ApiResponse.success(response);
-
-            // TODO: 추후에 CREATED(201)로 전달해야 함
         }
     }
 

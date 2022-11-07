@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class BarcodeService {
 	public String crawlSerialNumber(String barcode) throws IOException {
-		// TODO: QR 코드는 읽을 때 13~14 자리가 아닐 수도 있음
 		if (!barcode.matches("^\\d{13,14}")) { // 의약품바코드 형식(GTIN-13,GTIN-14)
 			throw BadRequestException.NOT_SUPPORTED_BARCODE_FORMAT;
 		}
